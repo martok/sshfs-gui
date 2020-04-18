@@ -18,12 +18,12 @@ object fmMain: TfmMain
     Height = 631
     Top = 0
     Width = 535
-    ActivePage = tsCommon
+    ActivePage = tsConnection
     Align = alClient
     TabIndex = 0
     TabOrder = 0
-    object tsCommon: TTabSheet
-      Caption = 'Settings'
+    object tsConnection: TTabSheet
+      Caption = 'Connection'
       ClientHeight = 598
       ClientWidth = 527
       object Panel1: TPanel
@@ -275,7 +275,7 @@ object fmMain: TfmMain
       end
     end
     object tsExtra: TTabSheet
-      Caption = 'Information'
+      Caption = 'Extra'
       ClientHeight = 598
       ClientWidth = 527
       object meInfoStart: TMemo

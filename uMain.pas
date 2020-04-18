@@ -17,7 +17,7 @@ type
 
   TfmMain = class(TForm)
     PageControl1: TPageControl;
-    tsCommon: TTabSheet;
+    tsConnection: TTabSheet;
     tsExtra: TTabSheet;
     ImageList1: TImageList;
     Panel1: TPanel;
@@ -103,7 +103,7 @@ var
 implementation
 
 uses
-  LCLIntf;
+  LCLIntf, FileUtil;
 
 {$R *.lfm}
 
@@ -189,7 +189,7 @@ procedure TfmMain.UpdateActionButtons;
 var
   pn: String;
 begin
-  tsCommon.Enabled:= Assigned(fActiveSelected);
+  tsConnection.Enabled:= Assigned(fActiveSelected);
   if Assigned(fActiveSelected) then begin
     btnMount.Enabled:= fActiveSelected.Status in [rsNone];
     btnUnmount.Enabled:= fActiveSelected.Status in [rsConnected];
@@ -244,6 +244,31 @@ begin
 end;
 
 procedure TfmMain.RemoteMount(aRemote: TRemote);
+  (*
+  Doesn't work: sshfs does parsing on ssh_command that doesn't work with spaces on cygwin
+  function tocygdrive(fn: string): string;
+  begin
+    Result:= '/cygdrive/' + LowerCase(ExtractFileDrive(fn)[1]) +
+             fn.Substring(2).Replace(PathDelim, '/');
+  end;
+
+  function tool(basename: string): string;
+  var
+    fn: String;
+  begin
+    fn:= ExpandFileName('lib\' + basename, ExtractFilePath(ParamStr(0)));
+    Result:= tocygdrive(fn).QuotedString('''');
+  end;
+  *)
+
+  function tool(basename: string): string;
+  begin
+    if not FileExists(ExtractFilePath(fExe) + basename) then
+      raise EFileNotFoundException.CreateFmt('SSHFS-Win - Addon not found: %s'+sLineBreak+'Please copy to %s',
+                                             [basename, ExtractFilePath(fExe)]);
+    Result:= '/bin/' + basename;
+  end;
+
 var
   proc: TProcess;
   BytesRead: Integer;
@@ -290,12 +315,12 @@ begin
       end;
     end;
     // encode modified ssh + pass_print
-    proc.Parameters.Add('-ossh_command=/bin/env -'+
+    proc.Parameters.Add('-ossh_command=%s -'+
          ' PATH=/bin'+
          ' DISPLAY=1'+
-         ' SSH_ASKPASS=/bin/print_pass'+
+         ' SSH_ASKPASS=%s'+
          ' SSHFS_AUTH_PASSPHRASE=%s'+
-         ' /bin/ssh_ap', [aRemote.AuthPassword]);
+         ' %s -v', [tool('env.exe'), tool('print_pass.exe'), aRemote.AuthPassword, tool('ssh_ap.exe')]);
     proc.Parameters.AddDelimitedText(aRemote.Options);
     proc.Execute;
     // Save PID as soon as possible

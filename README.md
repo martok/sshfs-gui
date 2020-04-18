@@ -1,6 +1,6 @@
 # SSHFS-Gui
 
-## Introduction 
+## Introduction
 SSHFS-Gui for mounting and managing SSH drives using [SSHFS-Win](https://github.com/billziss-gh/sshfs-win).
 
 Written in Lazarus and Freepascal.
@@ -15,7 +15,15 @@ Nonetheless, there are two methods of setup.
 ### Installer based
 First, install sshfs-win according to the [installation instructions](https://github.com/billziss-gh/sshfs-win/blob/master/README.md).
 
-Then configure the path to that installation's sshfs-win.exe.
+### Shims
+Copy these files to the directory where the `sshfs-win.exe` you intend to use resides:
+```
+    env.exe                - env(1)
+    ssh_ap.exe             - ssh(1), patched to use askpass with console
+    print_pass.exe         - special askpass
+```
+
+Then set the path to that `sshfs-win.exe` in the Extra page.
 
 ### Embedded / Semi-Portable
 
