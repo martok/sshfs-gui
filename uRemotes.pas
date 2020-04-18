@@ -53,6 +53,7 @@ type
     constructor Create;
     procedure ReadSection(ini: TIniFile; section: String);
     procedure WriteSection(ini: TIniFile; section: String);
+    procedure CopyFrom(Source: TRemote);
   end;
 
   { TRemoteList }
@@ -265,6 +266,22 @@ begin
   ini.WriteString(section, 'AuthSecKey', AuthSecKey);
   ini.WriteString(section, 'Options', Options);
   ini.WriteBool(section, 'AutoMount', AutoMount);
+end;
+
+procedure TRemote.CopyFrom(Source: TRemote);
+var
+  ini: TMemIniFile;
+  r: TRemote;
+begin
+  ini:= TMemIniFile.Create('');
+  try
+    Source.WriteSection(ini, 'A');
+    ReadSection(ini, 'A');
+    // PID should not be copied
+    PID:= 0;
+  finally
+    FreeAndNil(ini);
+  end;
 end;
 
 function GetFreeDriveLetters: string;

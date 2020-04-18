@@ -56,6 +56,7 @@ type
     btnRemoteAdd: TButton;
     btnRemoteDel: TButton;
     cbActAutomount: TCheckBox;
+    btnCopy: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvDefsData(Sender: TObject; Item: TListItem);
@@ -71,6 +72,7 @@ type
     procedure btnRemoteDelClick(Sender: TObject);
     procedure cbActAuthSelect(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
+    procedure btnCopyClick(Sender: TObject);
   private
     fRemotes: TRemoteList;
     fExe: string;
@@ -179,6 +181,7 @@ begin
     btnExplore.Enabled:= fActiveSelected.Status in [rsDriveTaken, rsConnected];
   end;
   btnRemoteDel.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsNone, rsDriveTaken]);
+  btnCopy.Enabled:= Assigned(fActiveSelected);
 end;
 
 procedure TfmMain.UpdateEditSelection(NewSel: TRemote);
@@ -367,6 +370,7 @@ begin
   fActiveSelected.Options:= edActOptions.Text;
   fActiveSelected.AutoMount:= cbActAutomount.Checked;
   fRemotes.Save;
+  UpdateActionButtons;
   lvDefs.Refresh;
 end;
 
@@ -393,7 +397,7 @@ var
   r: TRemote;
 begin
   r:= TRemote.Create;
-  r.Name:= Format('Connection %d', [fRemotes.Count]);
+  r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
   fRemotes.Add(r);
   fRemotes.Save;
   lvDefs.Items.Count:= fRemotes.Count;
@@ -409,6 +413,19 @@ begin
   fRemotes.Remove(todel);
   fRemotes.Save;
   lvDefs.Items.Count:= fRemotes.Count;
+end;
+
+procedure TfmMain.btnCopyClick(Sender: TObject);
+var
+  r: TRemote;
+begin
+  r:= TRemote.Create;
+  r.CopyFrom(fActiveSelected);
+  r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
+  fRemotes.Add(r);
+  fRemotes.Save;
+  lvDefs.Items.Count:= fRemotes.Count;
+  lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
 end;
 
 procedure TfmMain.TrayIcon1Click(Sender: TObject);
