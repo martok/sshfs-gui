@@ -174,6 +174,8 @@ begin
 end;
 
 procedure TfmMain.UpdateActionButtons;
+var
+  pn: String;
 begin
   PageControl1.Enabled:= Assigned(fActiveSelected);
   if Assigned(fActiveSelected) then begin
@@ -183,11 +185,20 @@ begin
   end;
   btnRemoteDel.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsNone, rsDriveTaken]);
   btnCopy.Enabled:= Assigned(fActiveSelected);
+
+
+  if Assigned(fActiveSelected) then begin
+    meInfoStart.Lines.Text:= fActiveSelected.InfoStart;
+    lbInfoPID.Caption:= IntToStr(fActiveSelected.PID);
+    if GetProcessInfo(fActiveSelected.PID, pn) = STILL_ACTIVE then
+      lbInfoPID.Caption:= lbInfoPID.Caption + ' <...' + Copy(pn, Length(pn) - 42) + '>';
+  end else begin
+    meInfoStart.Clear;
+    lbInfoPID.Caption:= '';
+  end;
 end;
 
 procedure TfmMain.UpdateEditSelection(NewSel: TRemote);
-var
-  pn: String;
 begin
   if Assigned(NewSel) then begin
     if fActiveSelected = NewSel then
@@ -204,10 +215,6 @@ begin
     cbActDrive.Text:= NewSel.Drive;
     edActOptions.Text:= NewSel.Options;
     cbActAutomount.Checked:= NewSel.AutoMount;
-    meInfoStart.Lines.Text:= NewSel.InfoStart;
-    lbInfoPID.Caption:= IntToStr(NewSel.PID);
-    if GetProcessInfo(NewSel.PID, pn) = STILL_ACTIVE then
-      lbInfoPID.Caption:= lbInfoPID.Caption + ' <...' + Copy(pn, Length(pn) - 42) + '>';
   end else begin
     edActName.Text:= '';
     edActHost.Text:= '';
@@ -220,8 +227,6 @@ begin
     cbActDrive.Text:= '';
     edActOptions.Text:= '';
     cbActAutomount.Checked:= False;
-    meInfoStart.Clear;
-    lbInfoPID.Caption:= '';
   end;
   fActiveSelected:= NewSel;
 end;
