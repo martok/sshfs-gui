@@ -10,6 +10,7 @@ object fmMain: TfmMain
   DesignTimePPI = 120
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnWindowStateChange = FormWindowStateChange
   Position = poDefaultPosOnly
   LCLVersion = '2.1.0.0'
   object PageControl1: TPageControl
@@ -262,6 +263,14 @@ object fmMain: TfmMain
         TabOrder = 9
         Text = 'cbActDrive'
       end
+      object cbActAutomount: TCheckBox
+        Left = 8
+        Height = 24
+        Top = 456
+        Width = 138
+        Caption = 'Mount on startup'
+        TabOrder = 11
+      end
     end
     object tsExtra: TTabSheet
       Caption = 'Information'
@@ -397,11 +406,6 @@ object fmMain: TfmMain
     Visible = True
     OnClick = TrayIcon1Click
     Left = 120
-    Top = 352
-  end
-  object ApplicationProperties1: TApplicationProperties
-    OnMinimize = ApplicationProperties1Minimize
-    Left = 272
     Top = 352
   end
 end

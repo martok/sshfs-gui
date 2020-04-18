@@ -40,16 +40,17 @@ type
     AuthSecKey: String;
     AuthPassword: String;
     Options: String;
+    AutoMount: Boolean;
   public
     // ephemeral
     InfoStart: String;
   public
-    PID: SizeUInt;  
-    function Status: TRemoteStatus;    
+    PID: SizeUInt;
+    function Status: TRemoteStatus;
     function GetConnectStr: String;
     procedure UpdateStatus;
     constructor Create;
-    procedure ReadSection(ini: TIniFile; section: String); 
+    procedure ReadSection(ini: TIniFile; section: String);
     procedure WriteSection(ini: TIniFile; section: String);
   end;
 
@@ -72,7 +73,7 @@ const
   STILL_ACTIVE = JwaWindows.STILL_ACTIVE;
 
 function GetProcessInfo(PID: SizeUInt; out ProcName: String): Integer;
-function KillProcess(PID:SizeUInt; Status:integer = 0): boolean; 
+function KillProcess(PID:SizeUInt; Status:integer = 0): boolean;
 function KillProcessTree(PID: SizeUInt; Status: Integer = 0): Boolean;
 function FindSubprocess(PID: SizeUInt; ProcessName: String; out ChildPID: SizeUInt): boolean;
 
@@ -91,7 +92,7 @@ begin
   if hproc = INVALID_HANDLE_VALUE then
     Exit(INVALID_HANDLE_VALUE);
   try
-    // still active?   
+    // still active?
     if not GetExitCodeProcess(hproc, ec) then
       exit(INVALID_HANDLE_VALUE);
     Result:= ec;
@@ -219,6 +220,7 @@ begin
   AuthPassword:= '';
   AuthSecKey:= '';
   Options:= '';
+  AutoMount:= false;
 end;
 
 procedure TRemote.ReadSection(ini: TIniFile; section: String);
@@ -237,6 +239,7 @@ begin
   AuthPassword:= ini.ReadString(section, 'AuthPassword', '');
   AuthSecKey:= ini.ReadString(section, 'AuthSecKey', '');
   Options:= ini.ReadString(section, 'Options', '');
+  AutoMount:= ini.ReadBool(section, 'AutoMount', false);
 end;
 
 procedure TRemote.WriteSection(ini: TIniFile; section: String);
@@ -255,6 +258,7 @@ begin
   ini.WriteString(section, 'AuthPassword', AuthPassword);
   ini.WriteString(section, 'AuthSecKey', AuthSecKey);
   ini.WriteString(section, 'Options', Options);
+  ini.WriteBool(section, 'AutoMount', AutoMount);
 end;
 
 function GetFreeDriveLetters: string;
@@ -299,13 +303,13 @@ var
 begin
   Clear;
   ini:= TIniFile.Create(fIniFile);
-  try    
+  try
     for i:= 0 to ini.ReadInteger('Config', 'Remotes', 0) - 1 do begin
       sec:= Format('Remote%d',[i]);
       r:= TRemote.Create;
       r.ReadSection(ini, sec);
       Add(r);
-      r.UpdateStatus;             
+      r.UpdateStatus;
     end;
   finally
     FreeAndNil(ini);

@@ -6,7 +6,10 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls, StdCtrls, Spin, EditBtn,
-  uRemotes, IniFiles, process;
+  uRemotes, IniFiles, process, LMessages;
+
+const
+  WMU_MOUNT_NEXT = WM_USER + 1;
 
 type
 
@@ -24,7 +27,6 @@ type
     btnExplore: TButton;
     TrayIcon1: TTrayIcon;
     btnSaveChanges: TButton;
-    ApplicationProperties1: TApplicationProperties;
     Label1: TLabel;
     edActName: TEdit;
     Label2: TLabel;
@@ -53,6 +55,7 @@ type
     Panel3: TPanel;
     btnRemoteAdd: TButton;
     btnRemoteDel: TButton;
+    cbActAutomount: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvDefsData(Sender: TObject; Item: TListItem);
@@ -62,12 +65,12 @@ type
     procedure tmrStatusUpdateTimer(Sender: TObject);
     procedure btnExploreClick(Sender: TObject);
     procedure TrayIcon1Click(Sender: TObject);
-    procedure ApplicationProperties1Minimize(Sender: TObject);
     procedure btnSaveChangesClick(Sender: TObject);
     procedure cbActDriveDropDown(Sender: TObject);
     procedure btnRemoteAddClick(Sender: TObject);
     procedure btnRemoteDelClick(Sender: TObject);
     procedure cbActAuthSelect(Sender: TObject);
+    procedure FormWindowStateChange(Sender: TObject);
   private
     fRemotes: TRemoteList;
     fExe: string;
@@ -75,6 +78,8 @@ type
     procedure UpdateActionButtons;
     procedure UpdateEditSelection(NewSel: TRemote);
     procedure RemoteMount(aRemote: TRemote);
+    procedure StartupActions;
+    procedure WMUMountNext(var msg: TLMessage); message WMU_MOUNT_NEXT;
   public
 
   end;
@@ -105,11 +110,43 @@ begin
   lvDefs.Items.Count:= fRemotes.Count;
   lvDefs.Selected:= nil;
   lvDefsSelectItem(nil, nil, False);
+  StartupActions;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(fRemotes);
+end;
+
+procedure TfmMain.StartupActions;
+var
+  i: Integer;
+begin
+  for i:= 1 to ParamCount do begin
+    case ParamStr(i) of
+      '/min': begin
+        //PostMessage(Handle, LM_SYSCOMMAND, SC_MINIMIZE, 0);
+        Application.ShowMainForm:= False;
+      end;
+      '/automount': PostMessage(Handle, WMU_MOUNT_NEXT, 0, 0);
+    end;
+  end;
+end;
+
+procedure TfmMain.WMUMountNext(var msg: TLMessage);
+var
+  idx: Integer;
+  r: TRemote;
+begin
+  idx:= msg.wParam;
+  if idx >= fRemotes.Count then
+    Exit;
+
+  r:= fRemotes[idx];
+  if (r.Status in [rsNone]) and r.AutoMount then begin
+    RemoteMount(r);
+    PostMessage(Handle, WMU_MOUNT_NEXT, idx + 1, 0);
+  end;
 end;
 
 procedure TfmMain.lvDefsData(Sender: TObject; Item: TListItem);
@@ -125,18 +162,18 @@ begin
 end;
 
 procedure TfmMain.lvDefsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-begin                 
+begin
   if lvDefs.ItemIndex >= 0 then
     UpdateEditSelection(fRemotes[lvDefs.ItemIndex])
   else
-    UpdateEditSelection(nil);    
-  UpdateActionButtons;        
+    UpdateEditSelection(nil);
+  UpdateActionButtons;
 end;
 
 procedure TfmMain.UpdateActionButtons;
-begin             
+begin
   PageControl1.Enabled:= Assigned(fActiveSelected);
-  if Assigned(fActiveSelected) then begin         
+  if Assigned(fActiveSelected) then begin
     btnMount.Enabled:= fActiveSelected.Status in [rsNone];
     btnUnmount.Enabled:= fActiveSelected.Status in [rsConnected];
     btnExplore.Enabled:= fActiveSelected.Status in [rsDriveTaken, rsConnected];
@@ -148,7 +185,7 @@ procedure TfmMain.UpdateEditSelection(NewSel: TRemote);
 var
   pn: String;
 begin
-  if Assigned(NewSel) then begin     
+  if Assigned(NewSel) then begin
     if fActiveSelected = NewSel then
       Exit;
     edActName.Text:= NewSel.Name;
@@ -162,11 +199,12 @@ begin
     cbActPath.Text:= NewSel.Path;
     cbActDrive.Text:= NewSel.Drive;
     edActOptions.Text:= NewSel.Options;
-    meInfoStart.Lines.Text:= NewSel.InfoStart;  
+    cbActAutomount.Checked:= NewSel.AutoMount;
+    meInfoStart.Lines.Text:= NewSel.InfoStart;
     lbInfoPID.Caption:= IntToStr(NewSel.PID);
     if GetProcessInfo(NewSel.PID, pn) = STILL_ACTIVE then
       lbInfoPID.Caption:= lbInfoPID.Caption + ' <...' + Copy(pn, Length(pn) - 42) + '>';
-  end else begin       
+  end else begin
     edActName.Text:= '';
     edActHost.Text:= '';
     seActPort.Value:= 22;
@@ -174,12 +212,13 @@ begin
     cbActAuth.ItemIndex:= 0;
     feActSecKey.FileName:= '';
     edActAuthPassword.Text:= '';
-    cbActPath.Text:= '';  
+    cbActPath.Text:= '';
     cbActDrive.Text:= '';
-    edActOptions.Text:= '';  
-    meInfoStart.Clear; 
+    edActOptions.Text:= '';
+    cbActAutomount.Checked:= False;
+    meInfoStart.Clear;
     lbInfoPID.Caption:= '';
-  end;      
+  end;
   fActiveSelected:= NewSel;
 end;
 
@@ -271,15 +310,15 @@ begin
   aRemote.UpdateStatus;
 end;
 
-procedure TfmMain.btnMountClick(Sender: TObject);  
-begin  
+procedure TfmMain.btnMountClick(Sender: TObject);
+begin
   if fActiveSelected.Status <> rsNone then
     Exit;
 
   RemoteMount(fActiveSelected);
 end;
 
-procedure TfmMain.btnUnmountClick(Sender: TObject);     
+procedure TfmMain.btnUnmountClick(Sender: TObject);
 begin
   if fActiveSelected.Status <> rsConnected then
     Exit;
@@ -307,7 +346,6 @@ begin
   OpenDocument(fActiveSelected.Drive);
 end;
 
-
 procedure TfmMain.btnSaveChangesClick(Sender: TObject);
 begin
   fActiveSelected.Name:= edActName.Text;
@@ -317,12 +355,13 @@ begin
   fActiveSelected.Auth:= TRemoteAuthMethod(cbActAuth.ItemIndex);
   fActiveSelected.AuthSecKey:= feActSecKey.FileName;
   fActiveSelected.AuthPassword:= edActAuthPassword.Text;
-  fActiveSelected.Path:= cbActPath.Text;  
+  fActiveSelected.Path:= cbActPath.Text;
   fActiveSelected.Drive:= cbActDrive.Text;
   fActiveSelected.Options:= edActOptions.Text;
+  fActiveSelected.AutoMount:= cbActAutomount.Checked;
   fRemotes.Save;
   lvDefs.Refresh;
-end;  
+end;
 
 procedure TfmMain.cbActAuthSelect(Sender: TObject);
 begin
@@ -367,12 +406,19 @@ end;
 
 procedure TfmMain.TrayIcon1Click(Sender: TObject);
 begin
-  Application.Restore;
+  ShowInTaskBar:= stDefault;
+  Show;
 end;
 
-procedure TfmMain.ApplicationProperties1Minimize(Sender: TObject);
+procedure TfmMain.FormWindowStateChange(Sender: TObject);
 begin
-  Hide;
+  case WindowState of
+    wsMinimized: begin
+      WindowState:= wsNormal;
+      Hide;
+      ShowInTaskBar:= stNever;
+    end;
+  end;
 end;
 
 
