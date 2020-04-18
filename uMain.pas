@@ -148,10 +148,9 @@ procedure TfmMain.UpdateEditSelection(NewSel: TRemote);
 var
   pn: String;
 begin
-  if fActiveSelected = NewSel then
-    Exit;
-
-  if Assigned(NewSel) then begin
+  if Assigned(NewSel) then begin     
+    if fActiveSelected = NewSel then
+      Exit;
     edActName.Text:= NewSel.Name;
     edActHost.Text:= NewSel.Host;
     seActPort.Value:= NewSel.Port;
@@ -252,16 +251,16 @@ begin
     proc.CloseOutput;
     proc.CloseStderr;
     aRemote.InfoStart:= Copy(OutputString, 1, BytesRead);
-    Writeln('Mount: new parent PID=', aRemote.PID);
-    WriteLn('Output:');
-    Writeln(aRemote.InfoStart);
+//    Writeln('Mount: new parent PID=', aRemote.PID);
+//    WriteLn('Output:');
+//    Writeln(aRemote.InfoStart);
     // if everything worked up to here, retarget our tracking to the subprocess
     // this also cleans up the cleartext password leak in argv of sshfs-win
     if FindSubprocess(aRemote.PID, 'sshfs.exe', sshfspid) then begin
-      Writeln('Mount: new child PID=', sshfspid);
+//      Writeln('Mount: new child PID=', sshfspid);
       if KillProcess(aRemote.PID) then begin
          aRemote.PID:= sshfspid;
-         Writeln('Mount: now tracking child process');
+//         Writeln('Mount: now tracking child process');
       end;
     end;
   finally

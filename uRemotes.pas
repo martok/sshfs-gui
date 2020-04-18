@@ -112,8 +112,8 @@ begin
   hproc:= OpenProcess(PROCESS_TERMINATE, false, PID);
   if hproc = INVALID_HANDLE_VALUE then
     Exit;
-  try               
-     Writeln('KillProcess ',PID);
+  try
+//    Writeln('KillProcess ',PID);
     Result:= TerminateProcess(hproc, Status);
   finally
     CloseHandle(hproc);
@@ -132,7 +132,7 @@ begin
   if Process32First(hSnap, pe) then begin
     repeat
       if pe.th32ParentProcessID = PID then begin
-        Writeln('KillProcessTree ',StrPas(pe.szExeFile),':',pe.th32ProcessID);
+//        Writeln('KillProcessTree ',StrPas(pe.szExeFile),':',pe.th32ProcessID);
         if not KillProcessTree(pe.th32ProcessID, Status) then
           Exit(False);
       end;
