@@ -18,9 +18,9 @@ object fmMain: TfmMain
     Height = 631
     Top = 0
     Width = 535
-    ActivePage = tsExtra
+    ActivePage = tsConnection
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     object tsConnection: TTabSheet
       Caption = 'Connection'
@@ -473,9 +473,26 @@ object fmMain: TfmMain
     Top = 280
   end
   object TrayIcon1: TTrayIcon
+    PopUpMenu = pmTray
     Visible = True
-    OnClick = TrayIcon1Click
+    OnClick = miShowClick
     Left = 120
     Top = 352
+  end
+  object pmTray: TPopupMenu
+    Left = 208
+    Top = 352
+    object miShow: TMenuItem
+      Caption = 'Show'
+      OnClick = miShowClick
+    end
+    object miStartMount: TMenuItem
+      Caption = 'Begin Automount'
+      OnClick = miStartMountClick
+    end
+    object miExit: TMenuItem
+      Caption = 'Exit'
+      OnClick = miExitClick
+    end
   end
 end

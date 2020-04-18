@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls, StdCtrls, Spin, EditBtn,
-  uRemotes, IniFiles, process, LMessages;
+  uRemotes, IniFiles, process, LMessages, Menus;
 
 const
   WMU_MOUNT_NEXT = WM_USER + 1;
@@ -63,6 +63,10 @@ type
     btnGlobalSave: TButton;
     btnGlobalUndo: TButton;
     lbSSHFSInfo: TLabel;
+    pmTray: TPopupMenu;
+    miShow: TMenuItem;
+    miStartMount: TMenuItem;
+    miExit: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvDefsData(Sender: TObject; Item: TListItem);
@@ -71,7 +75,6 @@ type
     procedure btnUnmountClick(Sender: TObject);
     procedure tmrStatusUpdateTimer(Sender: TObject);
     procedure btnExploreClick(Sender: TObject);
-    procedure TrayIcon1Click(Sender: TObject);
     procedure btnSaveChangesClick(Sender: TObject);
     procedure cbActDriveDropDown(Sender: TObject);
     procedure btnRemoteAddClick(Sender: TObject);
@@ -84,6 +87,9 @@ type
     procedure btnGlobalUndoClick(Sender: TObject);
     procedure cbSSHFSExeEnter(Sender: TObject);
     procedure cbSSHFSExeDropDown(Sender: TObject);
+    procedure miShowClick(Sender: TObject);
+    procedure miStartMountClick(Sender: TObject);
+    procedure miExitClick(Sender: TObject);
   private
     fRemotes: TRemoteList;
     fExe: string;
@@ -473,12 +479,6 @@ begin
   lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
 end;
 
-procedure TfmMain.TrayIcon1Click(Sender: TObject);
-begin
-  ShowInTaskBar:= stDefault;
-  Show;
-end;
-
 procedure TfmMain.FormWindowStateChange(Sender: TObject);
 begin
   if WindowState = wsMinimized then begin
@@ -537,6 +537,22 @@ begin
     Test(ConcatPaths([GetEnvironmentVariable('ProgramW6432'),'SSHFS-Win\bin\sshfs.exe']));
     Test(ConcatPaths([GetEnvironmentVariable('ProgramFiles'),'SSHFS-Win\bin\sshfs.exe']));
   end;
+end;
+
+procedure TfmMain.miShowClick(Sender: TObject);
+begin
+  ShowInTaskBar:= stDefault;
+  Show;
+end;
+
+procedure TfmMain.miStartMountClick(Sender: TObject);
+begin
+  PostMessage(Handle, WMU_MOUNT_NEXT, 0, 0);
+end;
+
+procedure TfmMain.miExitClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TfmMain.cbSSHFSExeChange(Sender: TObject);
