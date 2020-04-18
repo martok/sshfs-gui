@@ -18,9 +18,9 @@ object fmMain: TfmMain
     Height = 631
     Top = 0
     Width = 535
-    ActivePage = tsExtra
+    ActivePage = tsCommon
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     object tsCommon: TTabSheet
       Caption = 'Settings'
@@ -307,6 +307,65 @@ object fmMain: TfmMain
         Width = 62
         Caption = 'lbInfoPID'
         ParentColor = False
+      end
+      object GroupBox1: TGroupBox
+        Left = 0
+        Height = 294
+        Top = 304
+        Width = 527
+        Align = alBottom
+        Caption = 'Global Settings'
+        ClientHeight = 269
+        ClientWidth = 523
+        TabOrder = 1
+        object cbSSHFSExe: TComboBox
+          Left = 8
+          Height = 28
+          Top = 24
+          Width = 505
+          ItemHeight = 20
+          OnChange = cbSSHFSExeChange
+          OnDropDown = cbSSHFSExeDropDown
+          OnEnter = cbSSHFSExeEnter
+          TabOrder = 0
+          Text = 'cbSSHFSExe'
+        end
+        object Label12: TLabel
+          Left = 8
+          Height = 20
+          Top = 0
+          Width = 89
+          Caption = 'sshfs-win.exe:'
+          ParentColor = False
+        end
+        object btnGlobalSave: TButton
+          Left = 8
+          Height = 31
+          Top = 232
+          Width = 94
+          Caption = 'Save'
+          OnClick = btnGlobalSaveClick
+          TabOrder = 1
+        end
+        object btnGlobalUndo: TButton
+          Left = 104
+          Height = 31
+          Top = 232
+          Width = 94
+          Caption = 'Undo'
+          OnClick = btnGlobalUndoClick
+          TabOrder = 2
+        end
+        object lbSSHFSInfo: TLabel
+          Left = 432
+          Height = 20
+          Top = 0
+          Width = 81
+          Alignment = taRightJustify
+          Anchors = [akTop, akRight]
+          Caption = 'lbSSHFSInfo'
+          ParentColor = False
+        end
       end
     end
   end

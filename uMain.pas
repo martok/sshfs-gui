@@ -57,6 +57,12 @@ type
     btnRemoteDel: TButton;
     cbActAutomount: TCheckBox;
     btnCopy: TButton;
+    GroupBox1: TGroupBox;
+    cbSSHFSExe: TComboBox;
+    Label12: TLabel;
+    btnGlobalSave: TButton;
+    btnGlobalUndo: TButton;
+    lbSSHFSInfo: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvDefsData(Sender: TObject; Item: TListItem);
@@ -73,6 +79,11 @@ type
     procedure cbActAuthSelect(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure btnCopyClick(Sender: TObject);
+    procedure cbSSHFSExeChange(Sender: TObject);
+    procedure btnGlobalSaveClick(Sender: TObject);
+    procedure btnGlobalUndoClick(Sender: TObject);
+    procedure cbSSHFSExeEnter(Sender: TObject);
+    procedure cbSSHFSExeDropDown(Sender: TObject);
   private
     fRemotes: TRemoteList;
     fExe: string;
@@ -108,6 +119,7 @@ begin
   finally
     Free;
   end;
+  btnGlobalUndo.Click;
   fActiveSelected:= nil;
   lvDefs.Items.Count:= fRemotes.Count;
   lvDefs.Selected:= nil;
@@ -177,7 +189,7 @@ procedure TfmMain.UpdateActionButtons;
 var
   pn: String;
 begin
-  PageControl1.Enabled:= Assigned(fActiveSelected);
+  tsCommon.Enabled:= Assigned(fActiveSelected);
   if Assigned(fActiveSelected) then begin
     btnMount.Enabled:= fActiveSelected.Status in [rsNone];
     btnUnmount.Enabled:= fActiveSelected.Status in [rsConnected];
@@ -240,12 +252,18 @@ var
   tstart: LongWord;
   sshfspid: SizeUInt;
 begin
+  if not FileExists(fExe) then begin
+    MessageDlg('SSHFS-Win binary not present, please check settings!', mtError, [mbOK], 0);
+    PageControl1.ActivePage:= tsExtra;
+    exit;
+  end;
+
   proc:= TProcess.Create(nil);
   try
     Screen.Cursor:= crHourGlass;
     proc.Options:= [poUsePipes, poStderrToOutPut, poNewProcessGroup, poNoConsole];
     proc.Executable:= fExe;
-    proc.Environment.AddPair('PATH', '/bin');
+    proc.CurrentDirectory:= ExtractFileDir(ParamStr(0));
     proc.Parameters.AddStrings([
      'cmd',
      format('%s@%s:%s',[aRemote.User, aRemote.Host, aRemote.Path]),
@@ -449,6 +467,62 @@ begin
       ShowInTaskBar:= stNever;
     end;
   end;
+end;
+
+procedure TfmMain.btnGlobalSaveClick(Sender: TObject);
+begin
+  fExe:= cbSSHFSExe.Text;
+end;
+
+procedure TfmMain.btnGlobalUndoClick(Sender: TObject);
+begin
+  cbSSHFSExe.Text:= fExe;
+  cbSSHFSExeChange(nil);
+end;
+
+procedure TfmMain.cbSSHFSExeEnter(Sender: TObject);
+begin
+  cbSSHFSExe.Items.Clear;
+end;
+
+function GetSSHFSVersion(candidate: string): string;
+var
+  fn, outp: string;
+begin
+  Result:= '';
+  if FileExists(candidate) and SameFileName(ExtractFileName(candidate), 'sshfs-win.exe') and
+     RunCommandIndir(ExtractFileDir(candidate), candidate, ['cmd', '-V'], outp, [poNoConsole], swoHIDE) then
+    Result:= outp.Trim.Replace(#13,'').Replace(#10, ' ');
+end;
+
+procedure TfmMain.cbSSHFSExeDropDown(Sender: TObject);
+  procedure Test(guess: string);
+  var
+    v: string;
+  begin
+    if cbSSHFSExe.Items.IndexOf(guess)>= 0 then
+      Exit;
+    v:= GetSSHFSVersion(guess);
+    if v > '' then
+      cbSSHFSExe.Items.Add(guess);
+  end;
+
+begin
+  if cbSSHFSExe.Items.Count = 0 then begin
+    Test(ExtractFilePath(ParamStr(0)) + 'sshfs-win.exe');
+    Test(ConcatPaths([GetEnvironmentVariable('ProgramW6432'),'SSHFS-Win\bin\sshfs-win.exe']));
+    Test(ConcatPaths([GetEnvironmentVariable('ProgramFiles'),'SSHFS-Win\bin\sshfs-win.exe']));
+  end;
+end;
+
+procedure TfmMain.cbSSHFSExeChange(Sender: TObject);
+var
+  fn, outp: string;
+begin
+  lbSSHFSInfo.Caption:= '<invalid>';
+  outp:= GetSSHFSVersion(cbSSHFSExe.Text);
+  if outp>'' then
+    lbSSHFSInfo.Caption:= outp;
 end;
 
 
