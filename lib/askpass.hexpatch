@@ -1,0 +1,5 @@
+# Patch ssh.exe (cygwin-w64) to fully support SSH_ASKPASS even if connected to a terminal
+# readpass.c, read_passphrase, replace first check for flags & RP_USE_ASKPASS
+F6 C2 08 75 7C F6 C2 02  0F 84 6E 01 00 00
+F6 C2 08 EB 7C F6 C2 02  0F 84 6E 01 00 00
+
