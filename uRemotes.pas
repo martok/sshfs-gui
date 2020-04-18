@@ -332,7 +332,6 @@ end;
 procedure TRemote.CopyFrom(Source: TRemote);
 var
   ini: TMemIniFile;
-  r: TRemote;
 begin
   ini:= TMemIniFile.Create('');
   try

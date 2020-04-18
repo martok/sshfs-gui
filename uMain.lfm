@@ -18,9 +18,9 @@ object fmMain: TfmMain
     Height = 631
     Top = 0
     Width = 535
-    ActivePage = tsConnection
+    ActivePage = tsExtra
     Align = alClient
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     object tsConnection: TTabSheet
       Caption = 'Connection'
@@ -334,8 +334,8 @@ object fmMain: TfmMain
           Left = 8
           Height = 20
           Top = 0
-          Width = 89
-          Caption = 'sshfs-win.exe:'
+          Width = 60
+          Caption = 'sshfs.exe:'
           ParentColor = False
         end
         object btnGlobalSave: TButton
@@ -389,11 +389,11 @@ object fmMain: TfmMain
       Columns = <      
         item
           Caption = 'Name'
-          Width = 150
+          Width = 180
         end      
         item
           Caption = 'Remote'
-          Width = 262
+          Width = 232
         end>
       HideSelection = False
       OwnerData = True

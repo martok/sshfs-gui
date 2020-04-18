@@ -481,18 +481,21 @@ end;
 
 procedure TfmMain.FormWindowStateChange(Sender: TObject);
 begin
-  case WindowState of
-    wsMinimized: begin
-      WindowState:= wsNormal;
-      Hide;
-      ShowInTaskBar:= stNever;
-    end;
+  if WindowState = wsMinimized then begin
+    WindowState:= wsNormal;
+    Hide;
+    ShowInTaskBar:= stNever;
   end;
 end;
 
 procedure TfmMain.btnGlobalSaveClick(Sender: TObject);
 begin
   fExe:= cbSSHFSExe.Text;
+  with TIniFile.Create(fRemotes.IniFile) do try
+    WriteString('Config', 'Exe', fExe);
+  finally
+    Free;
+  end;
 end;
 
 procedure TfmMain.btnGlobalUndoClick(Sender: TObject);
