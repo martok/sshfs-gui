@@ -48,6 +48,7 @@ type
     PID: SizeUInt;
     function Status: TRemoteStatus;
     function GetConnectStr: String;
+    function GetDriveStr: String;
     procedure UpdateStatus;
     constructor Create;
     procedure ReadSection(ini: TIniFile; section: String);
@@ -170,6 +171,11 @@ begin
     Result:= Result + '!' + Inttostr(Port);
   if Path > '' then
     Result:= Result + ':' + Path;
+end;
+
+function TRemote.GetDriveStr: String;
+begin
+  Result:= Format('%s (%s)', [Name, Drive])
 end;
 
 function TRemote.Status: TRemoteStatus;

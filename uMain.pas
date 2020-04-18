@@ -156,7 +156,7 @@ begin
   if (Item.Index<0) or (Item.Index>=fRemotes.Count) then
     exit;
   r:= fRemotes[Item.Index];
-  Item.Caption:= Format('%s (%s)', [r.Name, r.Drive]);
+  Item.Caption:= r.GetDriveStr;
   Item.SubItems.Add(r.GetConnectStr);
   Item.ImageIndex:= Ord(r.Status);
 end;
@@ -329,14 +329,21 @@ begin
   fActiveSelected.UpdateStatus;
 end;
 
-
 procedure TfmMain.tmrStatusUpdateTimer(Sender: TObject);
+const
+  LPAD = '     ';
 var
   r: TRemote;
+  mounted: string;
 begin
+  mounted:= '';
   for r in fRemotes do begin
-    r.UpdateStatus;
+    if r.Status = rsConnected then
+      mounted+= LPAD + r.GetDriveStr + sLineBreak;
   end;
+  if mounted = '' then
+    mounted:= LPAD + 'none';
+  TrayIcon1.Hint:= Caption + sLineBreak + 'Mounted Drives: ' + sLineBreak + mounted;
   lvDefs.Refresh;
   UpdateActionButtons;
 end;
