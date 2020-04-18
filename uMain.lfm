@@ -1,0 +1,407 @@
+object fmMain: TfmMain
+  Left = 345
+  Height = 631
+  Top = 164
+  Width = 951
+  BorderIcons = [biSystemMenu, biMinimize]
+  Caption = 'SSHFS-GUI'
+  ClientHeight = 631
+  ClientWidth = 951
+  DesignTimePPI = 120
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poDefaultPosOnly
+  LCLVersion = '2.1.0.0'
+  object PageControl1: TPageControl
+    Left = 416
+    Height = 631
+    Top = 0
+    Width = 535
+    ActivePage = tsCommon
+    Align = alClient
+    TabIndex = 0
+    TabOrder = 0
+    object tsCommon: TTabSheet
+      Caption = 'Settings'
+      ClientHeight = 598
+      ClientWidth = 527
+      object Panel1: TPanel
+        Left = 0
+        Height = 47
+        Top = 0
+        Width = 527
+        Align = alTop
+        BevelOuter = bvLowered
+        ClientHeight = 47
+        ClientWidth = 527
+        TabOrder = 0
+        object btnMount: TButton
+          Left = 8
+          Height = 31
+          Top = 8
+          Width = 94
+          Caption = 'Mount'
+          OnClick = btnMountClick
+          TabOrder = 0
+        end
+        object btnUnmount: TButton
+          Left = 120
+          Height = 31
+          Top = 8
+          Width = 94
+          Caption = 'Unmount'
+          OnClick = btnUnmountClick
+          TabOrder = 1
+        end
+        object btnExplore: TButton
+          Left = 272
+          Height = 31
+          Top = 8
+          Width = 94
+          Caption = 'Explore'
+          OnClick = btnExploreClick
+          TabOrder = 2
+        end
+        object btnSaveChanges: TButton
+          Left = 424
+          Height = 31
+          Top = 8
+          Width = 94
+          Anchors = [akTop, akRight]
+          Caption = 'Save'
+          OnClick = btnSaveChangesClick
+          TabOrder = 3
+        end
+      end
+      object Label1: TLabel
+        Left = 8
+        Height = 20
+        Top = 64
+        Width = 43
+        Caption = 'Name:'
+        ParentColor = False
+      end
+      object edActName: TEdit
+        Left = 8
+        Height = 28
+        Top = 88
+        Width = 512
+        Anchors = [akTop, akLeft, akRight]
+        TabOrder = 1
+        Text = 'edActName'
+      end
+      object Label2: TLabel
+        Left = 8
+        Height = 20
+        Top = 128
+        Width = 34
+        Caption = 'Host:'
+        ParentColor = False
+      end
+      object edActHost: TEdit
+        Left = 8
+        Height = 28
+        Top = 152
+        Width = 416
+        TabOrder = 2
+        Text = 'edActHost'
+      end
+      object Label3: TLabel
+        Left = 432
+        Height = 20
+        Top = 128
+        Width = 30
+        Caption = 'Port:'
+        ParentColor = False
+      end
+      object Label4: TLabel
+        Left = 8
+        Height = 20
+        Top = 192
+        Width = 69
+        Caption = 'Username:'
+        ParentColor = False
+      end
+      object edActUsername: TEdit
+        Left = 8
+        Height = 28
+        Top = 216
+        Width = 328
+        TabOrder = 4
+        Text = 'edActUsername'
+      end
+      object Label5: TLabel
+        Left = 344
+        Height = 20
+        Top = 192
+        Width = 100
+        Caption = 'Authentication:'
+        ParentColor = False
+      end
+      object Label6: TLabel
+        Left = 8
+        Height = 20
+        Top = 256
+        Width = 65
+        Caption = 'Password:'
+        ParentColor = False
+      end
+      object edActAuthPassword: TEdit
+        Left = 8
+        Height = 28
+        Top = 280
+        Width = 265
+        TabOrder = 6
+        Text = 'edActAuthPassword'
+      end
+      object Label7: TLabel
+        Left = 8
+        Height = 20
+        Top = 320
+        Width = 32
+        Caption = 'Path:'
+        ParentColor = False
+      end
+      object Label8: TLabel
+        Left = 8
+        Height = 20
+        Top = 384
+        Width = 176
+        Caption = 'Additional Mount Options:'
+        ParentColor = False
+      end
+      object edActOptions: TEdit
+        Left = 8
+        Height = 28
+        Top = 408
+        Width = 512
+        Anchors = [akTop, akLeft, akRight]
+        TabOrder = 10
+        Text = 'edActOptions'
+      end
+      object cbActAuth: TComboBox
+        Left = 344
+        Height = 28
+        Top = 216
+        Width = 176
+        Anchors = [akTop, akLeft, akRight]
+        ItemHeight = 20
+        Items.Strings = (
+          'Password'
+          'Private Key'
+        )
+        OnSelect = cbActAuthSelect
+        Style = csDropDownList
+        TabOrder = 5
+      end
+      object seActPort: TSpinEdit
+        Left = 432
+        Height = 28
+        Top = 152
+        Width = 88
+        Anchors = [akTop, akLeft, akRight]
+        MaxValue = 65535
+        MinValue = 1
+        TabOrder = 3
+        Value = 1
+      end
+      object feActSecKey: TFileNameEdit
+        Left = 279
+        Height = 28
+        Top = 280
+        Width = 241
+        FilterIndex = 0
+        HideDirectories = False
+        ButtonWidth = 29
+        NumGlyphs = 1
+        Anchors = [akTop, akLeft, akRight]
+        MaxLength = 0
+        TabOrder = 7
+      end
+      object Label9: TLabel
+        Left = 279
+        Height = 20
+        Top = 256
+        Width = 76
+        Caption = 'Private Key:'
+        ParentColor = False
+      end
+      object cbActPath: TComboBox
+        Left = 8
+        Height = 28
+        Top = 344
+        Width = 328
+        ItemHeight = 20
+        Items.Strings = (
+          '.'
+          '/'
+        )
+        TabOrder = 8
+        Text = 'cbActPath'
+      end
+      object Label11: TLabel
+        Left = 344
+        Height = 20
+        Top = 320
+        Width = 80
+        Caption = 'Drive Letter:'
+        ParentColor = False
+      end
+      object cbActDrive: TComboBox
+        Left = 344
+        Height = 28
+        Top = 344
+        Width = 176
+        Anchors = [akTop, akLeft, akRight]
+        ItemHeight = 20
+        Items.Strings = (
+          '.'
+          '/'
+        )
+        OnDropDown = cbActDriveDropDown
+        TabOrder = 9
+        Text = 'cbActDrive'
+      end
+    end
+    object tsExtra: TTabSheet
+      Caption = 'Information'
+      ClientHeight = 598
+      ClientWidth = 551
+      object meInfoStart: TMemo
+        Left = 4
+        Height = 192
+        Top = 8
+        Width = 540
+        Anchors = [akTop, akLeft, akRight]
+        Lines.Strings = (
+          'meInfoStart'
+        )
+        ReadOnly = True
+        ScrollBars = ssAutoBoth
+        TabOrder = 0
+        WordWrap = False
+      end
+      object Label10: TLabel
+        Left = 4
+        Height = 20
+        Top = 232
+        Width = 71
+        Caption = 'Process ID:'
+        ParentColor = False
+      end
+      object lbInfoPID: TLabel
+        Left = 96
+        Height = 20
+        Top = 232
+        Width = 62
+        Caption = 'lbInfoPID'
+        ParentColor = False
+      end
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Height = 631
+    Top = 0
+    Width = 416
+    Align = alLeft
+    BevelOuter = bvNone
+    ClientHeight = 631
+    ClientWidth = 416
+    TabOrder = 1
+    object lvDefs: TListView
+      Left = 0
+      Height = 584
+      Top = 0
+      Width = 416
+      Align = alClient
+      AutoWidthLastColumn = True
+      Columns = <      
+        item
+          Caption = 'Name'
+          Width = 150
+        end      
+        item
+          Caption = 'Remote'
+          Width = 262
+        end>
+      HideSelection = False
+      OwnerData = True
+      ReadOnly = True
+      RowSelect = True
+      SmallImages = ImageList1
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnData = lvDefsData
+      OnSelectItem = lvDefsSelectItem
+    end
+    object Panel3: TPanel
+      Left = 0
+      Height = 47
+      Top = 584
+      Width = 416
+      Align = alBottom
+      BevelOuter = bvLowered
+      ClientHeight = 47
+      ClientWidth = 416
+      TabOrder = 1
+      object btnRemoteAdd: TButton
+        Left = 8
+        Height = 31
+        Top = 8
+        Width = 94
+        Caption = 'Add'
+        OnClick = btnRemoteAddClick
+        TabOrder = 0
+      end
+      object btnRemoteDel: TButton
+        Left = 120
+        Height = 31
+        Top = 8
+        Width = 94
+        Caption = 'Remove'
+        OnClick = btnRemoteDelClick
+        TabOrder = 1
+      end
+    end
+  end
+  object ImageList1: TImageList
+    Left = 120
+    Top = 184
+    Bitmap = {
+      4C7A040000001000000010000000D10100000000000078DAE556818DC3200C64
+      948CD0111825236483324A47C8088CD011324236A01CE412C2BB1468A4D7EB91
+      AE698CCF36B62128E79C32468928CDA5F3784ABA2D72BCFB5F11353681307B1E
+      271B256E81BFDBF9948F027FB7D1C12FE6235D97C017ED513F472BBF227E897F
+      BFDFABEBF767F8A5FECD21F5FE26836D82F25496CA8BBD54B387DFEE23AC2543
+      8D2F89576BA745E71BAEA4D71A5BAADBB3AEDC96AAA8C3BB787B72F289FF299F
+      257E4F1D735BAD3D70458F5DD99F3DFD7FC5FEFBCF107215CECAFCBCAEE981BD
+      1FB36F6E730FA4E77E432D4BFCA67C988D6BFA7A28E577D7A33776E18C69CA5D
+      FC6EEEF5EF391F5AEA7F45FFFDCABEF96AE85EE2A0941D636E5B83D0DEA93309
+      F46127DA1A06EB81FC3A358E2EBC6FF3C65A67BDDC6436162FD75A477D60599C
+      F2B200FCE79DCBFFC778785D72616F5D57777B3E9D7A3C78378B7D8338600F72
+      C0DB9BBD1EFC918FB1D0873111888531808FF7648E31C037C66D9EA32EFD48F7
+      7BDAC5FA37803F336ECC277106FF00FD3246C483BC6FFE27F8A64E0EDA03C083
+      2CDE95434DA6693AAF4D82460EF51123727AF45ECC336B8727E6F1A49CEB267E
+      F69C0EF1709E3D70B237B0A6B6B0170E9F8CE1ECD755EC199DF4B2D938B6639F
+      548D17EAC608A8
+    }
+  end
+  object tmrStatusUpdate: TTimer
+    Interval = 800
+    OnTimer = tmrStatusUpdateTimer
+    Left = 120
+    Top = 280
+  end
+  object TrayIcon1: TTrayIcon
+    Visible = True
+    OnClick = TrayIcon1Click
+    Left = 120
+    Top = 352
+  end
+  object ApplicationProperties1: TApplicationProperties
+    OnMinimize = ApplicationProperties1Minimize
+    Left = 272
+    Top = 352
+  end
+end
