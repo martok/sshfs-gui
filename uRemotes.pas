@@ -81,6 +81,9 @@ function FindSubprocess(PID: SizeUInt; ProcessName: String; out ChildPID: SizeUI
 
 function GetFreeDriveLetters: string;
 
+function DPProtect(Data: TBytes): String;
+function DPUnprotect(Encoded: String): TBytes;
+
 implementation
 
 function GetProcessInfo(PID: SizeUInt; out ProcName: String): Integer;
@@ -160,6 +163,61 @@ begin
         Exit(True);
       end;
     until not Process32Next(hSnap, pe);
+  end;
+end;
+
+
+function GetFreeDriveLetters: string;
+var
+  d: byte;
+  bits: DWORD;
+begin
+  bits:= GetLogicalDrives;
+  Result:= '';
+  for d:= ord('A') to ord('Z') do begin
+    if (bits and 1) = 0 then
+      Result += Chr(d);
+    bits:= bits shr 1;
+  end;
+end;
+
+function DPProtect(Data: TBytes): String;
+var
+  blobin, blobout: DATA_BLOB;
+  L: DWORD;
+begin
+  Result:= '';
+  blobin.cbData:= Length(Data);
+  blobin.pbData:= @Data[0];
+  if CryptProtectData(@blobin, nil, nil, nil, nil, CRYPTPROTECT_UI_FORBIDDEN, @blobout) then begin
+    L:= blobout.cbData * 4;
+    SetLength(Result, L);
+    if CryptBinaryToStringA(blobout.pbData, blobout.cbData, CRYPT_STRING_BASE64 or CRYPT_STRING_NOCR, @Result[1], L) then begin
+      SetLength(Result, L);
+      Result:= Result.Replace(#10, '');
+    end else
+      Result:= '';
+    LocalFree(HLOCAL(blobout.pbData));
+  end;
+end;
+
+function DPUnprotect(Encoded: String): TBytes;
+var
+  buf: TBytes;
+  blobin, blobout: DATA_BLOB;
+  L: DWORD;
+begin
+  Result:= nil;
+  L:= Length(Encoded);
+  SetLength(buf, L);
+  if CryptStringToBinaryA(@Encoded[1], Length(Encoded), CRYPT_STRING_BASE64, @buf[0], L, nil) then begin
+    blobin.cbData:= L;
+    blobin.pbData:= @buf[0];
+    if CryptUnprotectData(@blobin, nil, nil, nil, nil, CRYPTPROTECT_UI_FORBIDDEN, @blobout) then begin
+      SetLength(Result, blobout.cbData);
+      Move(blobout.pbData^, Result[0], Length(Result));
+      LocalFree(HLOCAL(blobout.pbData));
+    end;
   end;
 end;
 
@@ -243,7 +301,8 @@ begin
     'password': Auth:= amPassword;
     'pubkey': Auth:= amPubkey;
   end;
-  AuthPassword:= ini.ReadString(section, 'AuthPassword', '');
+  AuthPassword:= TEncoding.Default.GetAnsiString(DPUnprotect(ini.ReadString(section, 'AuthPassword', '')));
+
   AuthSecKey:= ini.ReadString(section, 'AuthSecKey', '');
   Options:= ini.ReadString(section, 'Options', '');
   AutoMount:= ini.ReadBool(section, 'AutoMount', false);
@@ -262,7 +321,7 @@ begin
     amPassword: ini.WriteString(section, 'Auth', 'password');
     amPubkey: ini.WriteString(section, 'Auth', 'pubkey');
   end;
-  ini.WriteString(section, 'AuthPassword', AuthPassword);
+  ini.WriteString(section, 'AuthPassword', DPProtect(TEncoding.Default.GetAnsiBytes(AuthPassword)));
   ini.WriteString(section, 'AuthSecKey', AuthSecKey);
   ini.WriteString(section, 'Options', Options);
   ini.WriteBool(section, 'AutoMount', AutoMount);
@@ -281,20 +340,6 @@ begin
     PID:= 0;
   finally
     FreeAndNil(ini);
-  end;
-end;
-
-function GetFreeDriveLetters: string;
-var
-  d: byte;
-  bits: DWORD;
-begin
-  bits:= GetLogicalDrives;
-  Result:= '';
-  for d:= ord('A') to ord('Z') do begin
-    if (bits and 1) = 0 then
-      Result += Chr(d);
-    bits:= bits shr 1;
   end;
 end;
 
