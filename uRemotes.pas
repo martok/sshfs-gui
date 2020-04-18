@@ -47,7 +47,7 @@ type
   public
     PID: SizeUInt;
     function Status: TRemoteStatus;
-    function GetConnectStr: String;
+    function GetConnectStr(IncludePort: boolean=false): String;
     function GetDriveStr: String;
     procedure UpdateStatus;
     constructor Create;
@@ -223,13 +223,15 @@ end;
 
 { TRemote }
 
-function TRemote.GetConnectStr: String;
+function TRemote.GetConnectStr(IncludePort: boolean = false): String;
 begin
   Result:= User + '@' + Host;
-  if Port <> 22 then
+  if IncludePort and (Port <> 22) then
     Result:= Result + '!' + Inttostr(Port);
   if Path > '' then
-    Result:= Result + ':' + Path;
+    Result:= Result + ':' + Path
+  else
+    Result:= Result + ':.';
 end;
 
 function TRemote.GetDriveStr: String;

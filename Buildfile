@@ -21,8 +21,8 @@ files=sshfs.files
 
 [sshfs.files]
 sshfs_gui.exe=
-${SSHFS_WIN_UNPACK}\cyg*.dll=
-${SSHFS_WIN_UNPACK}\ssh*.exe=
-lib\env.exe=
-lib\print_pass.exe=
-
+lib\env.exe=lib\
+lib\ssh_ap.exe=lib\
+lib\print_pass.exe=lib\
+${SSHFS_WIN_UNPACK}\cyg*.dll=sshfs-win\
+${SSHFS_WIN_UNPACK}\ssh*.exe=sshfs-win\

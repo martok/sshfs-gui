@@ -115,7 +115,7 @@ begin
   fRemotes:= TRemoteList.Create;
   fRemotes.IniFile:= ChangeFileExt(ParamStr(0), '.ini');
   with TIniFile.Create(fRemotes.IniFile) do try
-    fExe:= ExpandFileName(ReadString('Config', 'Exe', 'sshfs-win.exe'));
+    fExe:= ReadString('Config', 'Exe', '');
   finally
     Free;
   end;
@@ -172,7 +172,7 @@ begin
     exit;
   r:= fRemotes[Item.Index];
   Item.Caption:= r.GetDriveStr;
-  Item.SubItems.Add(r.GetConnectStr);
+  Item.SubItems.Add(r.GetConnectStr(True));
   Item.ImageIndex:= Ord(r.Status);
 end;
 
@@ -244,33 +244,16 @@ begin
 end;
 
 procedure TfmMain.RemoteMount(aRemote: TRemote);
-  (*
-  Doesn't work: sshfs does parsing on ssh_command that doesn't work with spaces on cygwin
+
   function tocygdrive(fn: string): string;
   begin
-    Result:= '/cygdrive/' + LowerCase(ExtractFileDrive(fn)[1]) +
-             fn.Substring(2).Replace(PathDelim, '/');
-  end;
-
-  function tool(basename: string): string;
-  var
-    fn: String;
-  begin
-    fn:= ExpandFileName('lib\' + basename, ExtractFilePath(ParamStr(0)));
-    Result:= tocygdrive(fn).QuotedString('''');
-  end;
-  *)
-
-  function tool(basename: string): string;
-  begin
-    if not FileExists(ExtractFilePath(fExe) + basename) then
-      raise EFileNotFoundException.CreateFmt('SSHFS-Win - Addon not found: %s'+sLineBreak+'Please copy to %s',
-                                             [basename, ExtractFilePath(fExe)]);
-    Result:= '/bin/' + basename;
+    fn:= ExpandFileName(fn);
+    Result:= '/cygdrive/' + LowerCase(fn[1]) + fn.Substring(2).Replace(PathDelim, '/');
   end;
 
 var
   proc: TProcess;
+  tooldir: string;
   BytesRead: Integer;
   OutputLength: integer;
   OutputString: String;
@@ -278,29 +261,47 @@ var
   sshfspid: SizeUInt;
 begin
   if not FileExists(fExe) then begin
-    MessageDlg('SSHFS-Win binary not present, please check settings!', mtError, [mbOK], 0);
+    MessageDlg('SSHFS binary not present, please check settings!', mtError, [mbOK], 0);
     PageControl1.ActivePage:= tsExtra;
     exit;
   end;
+
+  tooldir:= ExtractFilePath(ParamStr(0)) + 'lib\';
 
   proc:= TProcess.Create(nil);
   try
     Screen.Cursor:= crHourGlass;
     proc.Options:= [poUsePipes, poStderrToOutPut, poNewProcessGroup, poNoConsole];
-    proc.Executable:= fExe;
-    proc.CurrentDirectory:= ExtractFileDir(ParamStr(0));
+    // Use our provided env.exe, but in the target's dir - means it loads *their* cygwin1.dll
+    proc.Executable:= tooldir + 'env.exe';
+    proc.CurrentDirectory:= ExtractFileDir(fExe);
+    // pass all env variables we might need
     proc.Parameters.AddStrings([
-     'cmd',
-     format('%s@%s:%s',[aRemote.User, aRemote.Host, aRemote.Path]),
-     aRemote.Drive,
-     '-f',
-     '-oUserKnownHostsFile=/dev/null', '-oStrictHostKeyChecking=no',
-     '-oIdentitiesOnly=yes',
-     '-ouid=-1,gid=-1', '-oidmap=user', '-oumask=000', '-ocreate_umask=000',
-     '-ovolname='+aRemote.Name
+     '-',
+     'PATH='+tocygdrive(tooldir)+':'+tocygdrive(ExtractFilePath(fExe)),
+     'DISPLAY=1',
+     'SSH_ASKPASS=print_pass.exe',
+     'SSHFS_AUTH_PASSPHRASE=' + aRemote.AuthPassword
     ]);
+    // the actuall sshfs process
+    proc.Parameters.AddStrings([
+     tocygdrive(fExe),
+     aRemote.GetConnectStr,
+     aRemote.Drive,
+     '-ovolname='+aRemote.Name,
+     '-ossh_command=ssh_ap.exe -v',
+     '-f',
+     // do not attempt loading user profile data
+     '-F/dev/null', '-oIdentitiesOnly=yes',
+     // make message reproducible
+     '-oUserKnownHostsFile=/dev/null', '-oStrictHostKeyChecking=no',
+     // remap for write permissions
+     '-ouid=-1,gid=-1', '-oidmap=user', '-oumask=000', '-ocreate_umask=000'
+    ]);
+    // port is not part of the connect string
     if aRemote.Port<>22 then
       proc.Parameters.Add('-p%d', [aRemote.Port]);
+    // authentication
     case aRemote.Auth of
       amPassword: begin
         proc.Parameters.AddStrings([
@@ -314,18 +315,12 @@ begin
         ]);
       end;
     end;
-    // encode modified ssh + pass_print
-    proc.Parameters.Add('-ossh_command=%s -'+
-         ' PATH=/bin'+
-         ' DISPLAY=1'+
-         ' SSH_ASKPASS=%s'+
-         ' SSHFS_AUTH_PASSPHRASE=%s'+
-         ' %s -v', [tool('env.exe'), tool('print_pass.exe'), aRemote.AuthPassword, tool('ssh_ap.exe')]);
+    // user options last (allow override)
     proc.Parameters.AddDelimitedText(aRemote.Options);
+    // Execute and capture PID as soon as we can
     proc.Execute;
-    // Save PID as soon as possible
     aRemote.PID:= proc.ProcessID;
-    // wait and see what happens:
+    // wait and see what happens
     proc.CloseInput;
     OutputLength:= 0;
     OutputString:= '';
@@ -345,9 +340,10 @@ begin
 //    Writeln('Mount: new parent PID=', aRemote.PID);
 //    WriteLn('Output:');
 //    Writeln(aRemote.InfoStart);
+
     // if everything worked up to here, retarget our tracking to the subprocess
-    // this also cleans up the cleartext password leak in argv of sshfs-win
-    if FindSubprocess(aRemote.PID, 'sshfs.exe', sshfspid) then begin
+    // this also cleans up the cleartext password leak in argv of /bin/env
+    if FindSubprocess(aRemote.PID, ExtractFileName(fExe), sshfspid) then begin
 //      Writeln('Mount: new child PID=', sshfspid);
       if KillProcess(aRemote.PID) then begin
          aRemote.PID:= sshfspid;
@@ -515,8 +511,8 @@ var
   fn, outp: string;
 begin
   Result:= '';
-  if FileExists(candidate) and SameFileName(ExtractFileName(candidate), 'sshfs-win.exe') and
-     RunCommandIndir(ExtractFileDir(candidate), candidate, ['cmd', '-V'], outp, [poNoConsole], swoHIDE) then
+  if FileExists(candidate) and SameFileName(ExtractFileName(candidate), 'sshfs.exe') and
+     RunCommandIndir(ExtractFileDir(candidate), candidate, ['-V'], outp, [poNoConsole], swoHIDE) then
     Result:= outp.Trim.Replace(#13,'').Replace(#10, ' ');
 end;
 
@@ -534,9 +530,9 @@ procedure TfmMain.cbSSHFSExeDropDown(Sender: TObject);
 
 begin
   if cbSSHFSExe.Items.Count = 0 then begin
-    Test(ExtractFilePath(ParamStr(0)) + 'sshfs-win.exe');
-    Test(ConcatPaths([GetEnvironmentVariable('ProgramW6432'),'SSHFS-Win\bin\sshfs-win.exe']));
-    Test(ConcatPaths([GetEnvironmentVariable('ProgramFiles'),'SSHFS-Win\bin\sshfs-win.exe']));
+    Test(ExtractFilePath(ParamStr(0)) + 'sshfs-win\sshfs.exe');
+    Test(ConcatPaths([GetEnvironmentVariable('ProgramW6432'),'SSHFS-Win\bin\sshfs.exe']));
+    Test(ConcatPaths([GetEnvironmentVariable('ProgramFiles'),'SSHFS-Win\bin\sshfs.exe']));
   end;
 end;
 
