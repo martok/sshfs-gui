@@ -140,19 +140,21 @@ object fmMain: TfmMain
         ParentColor = False
       end
       object Label6: TLabel
-        Left = 8
+        Left = 272
         Height = 20
         Top = 256
-        Width = 65
-        Caption = 'Password:'
+        Width = 151
+        Caption = 'Password / Passphrase:'
         ParentColor = False
       end
       object edActAuthPassword: TEdit
-        Left = 8
+        Left = 272
         Height = 28
         Top = 280
-        Width = 265
-        TabOrder = 6
+        Width = 248
+        EchoMode = emPassword
+        PasswordChar = '*'
+        TabOrder = 7
         Text = 'edActAuthPassword'
       end
       object Label7: TLabel
@@ -207,20 +209,20 @@ object fmMain: TfmMain
         Value = 1
       end
       object feActSecKey: TFileNameEdit
-        Left = 279
+        Left = 8
         Height = 28
         Top = 280
-        Width = 241
+        Width = 256
         FilterIndex = 0
         HideDirectories = False
         ButtonWidth = 29
         NumGlyphs = 1
         Anchors = [akTop, akLeft, akRight]
         MaxLength = 0
-        TabOrder = 7
+        TabOrder = 6
       end
       object Label9: TLabel
-        Left = 279
+        Left = 8
         Height = 20
         Top = 256
         Width = 76
@@ -275,12 +277,12 @@ object fmMain: TfmMain
     object tsExtra: TTabSheet
       Caption = 'Information'
       ClientHeight = 598
-      ClientWidth = 551
+      ClientWidth = 527
       object meInfoStart: TMemo
         Left = 4
         Height = 192
         Top = 8
-        Width = 540
+        Width = 516
         Anchors = [akTop, akLeft, akRight]
         Lines.Strings = (
           'meInfoStart'

@@ -112,6 +112,7 @@ begin
   lvDefs.Items.Count:= fRemotes.Count;
   lvDefs.Selected:= nil;
   lvDefsSelectItem(nil, nil, False);
+  PageControl1.ActivePageIndex:= 0;
   StartupActions;
 end;
 
