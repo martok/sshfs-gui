@@ -21,6 +21,7 @@ files=sshfs.files
 
 [sshfs.files]
 sshfs_gui.exe=
+README.md=
 lib\env.exe=lib\
 lib\ssh_ap.exe=lib\
 lib\print_pass.exe=lib\
