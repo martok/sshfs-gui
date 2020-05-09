@@ -60,15 +60,12 @@ type
 
   TRemoteList = class(specialize TFPGObjectList<TRemote>)
   private
-    fIniFile: String;
-    procedure SetIniFile(aValue: String);
   public
     constructor Create;
     destructor Destroy; override;
   public
-    property IniFile: String read fIniFile write SetIniFile;
-    procedure Load;
-    procedure Save;
+    procedure LoadFromIni(ini: TIniFile);
+    procedure SaveToIni(ini: TIniFile);
   end;
 
 const
@@ -356,52 +353,33 @@ begin
   inherited Destroy;
 end;
 
-procedure TRemoteList.SetIniFile(aValue: String);
-begin
-  if fIniFile=aValue then Exit;
-  fIniFile:=aValue;
-  Load;
-end;
-
-procedure TRemoteList.Load;
+procedure TRemoteList.LoadFromIni(ini: TIniFile);
 var
-  ini: TIniFile;
   i: Integer;
   sec: String;
   r: TRemote;
 begin
   Clear;
-  ini:= TIniFile.Create(fIniFile);
-  try
-    for i:= 0 to ini.ReadInteger('Config', 'Remotes', 0) - 1 do begin
-      sec:= Format('Remote%d',[i]);
-      r:= TRemote.Create;
-      r.ReadSection(ini, sec);
-      Add(r);
-      r.UpdateStatus;
-    end;
-  finally
-    FreeAndNil(ini);
+  for i:= 0 to ini.ReadInteger('Config', 'Remotes', 0) - 1 do begin
+    sec:= Format('Remote%d',[i]);
+    r:= TRemote.Create;
+    r.ReadSection(ini, sec);
+    Add(r);
+    r.UpdateStatus;
   end;
 end;
 
-procedure TRemoteList.Save;
+procedure TRemoteList.SaveToIni(ini: TIniFile);
 var
-  ini: TIniFile;
   i: Integer;
   sec: String;
   r: TRemote;
 begin
-  ini:= TIniFile.Create(fIniFile);
-  try
-    ini.WriteInteger('Config', 'Remotes', Count);
-    for i:= 0 to Count - 1 do begin
-      sec:= Format('Remote%d',[i]);
-      r:= Items[i];
-      r.WriteSection(ini, sec);
-    end;
-  finally
-    FreeAndNil(ini);
+  ini.WriteInteger('Config', 'Remotes', Count);
+  for i:= 0 to Count - 1 do begin
+    sec:= Format('Remote%d',[i]);
+    r:= Items[i];
+    r.WriteSection(ini, sec);
   end;
 end;
 

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls, StdCtrls, Spin, EditBtn,
-  uRemotes, IniFiles, process, LMessages, Menus;
+  uRemotes, process, LMessages, Menus;
 
 const
   WMU_MOUNT_NEXT = WM_USER + 1;
@@ -97,6 +97,7 @@ type
     procedure UpdateActionButtons;
     procedure UpdateEditSelection(NewSel: TRemote);
     procedure RemoteMount(aRemote: TRemote);
+    procedure RemotesChanged;
     procedure StartupActions;
     procedure WMUMountNext(var msg: TLMessage); message WMU_MOUNT_NEXT;
   public
@@ -109,21 +110,24 @@ var
 implementation
 
 uses
-  LCLIntf, FileUtil;
+  LCLIntf, FileUtil, uConfig;
 
 {$R *.lfm}
 
 { TfmMain }
 
 procedure TfmMain.FormCreate(Sender: TObject);
+var
+  ini: TIniFile;
 begin
   TrayIcon1.Icon:= Application.Icon;
   fRemotes:= TRemoteList.Create;
-  fRemotes.IniFile:= ChangeFileExt(ParamStr(0), '.ini');
-  with TIniFile.Create(fRemotes.IniFile) do try
-    fExe:= ReadString('Config', 'Exe', '');
+  ini:= OpenIniFile;
+  try
+    fExe:= ini.ReadString('Config', 'Exe', '');
+    fRemotes.LoadFromIni(ini);
   finally
-    Free;
+    FreeAndNil(ini);
   end;
   btnGlobalUndo.Click;
   fActiveSelected:= nil;
@@ -360,8 +364,20 @@ begin
     Screen.Cursor:= crDefault;
     FreeAndNil(proc);
   end;
-  fRemotes.Save;
+  RemotesChanged;
   aRemote.UpdateStatus;
+end;
+
+procedure TfmMain.RemotesChanged;
+var
+  ini: TIniFile;
+begin
+  ini:= OpenIniFile;
+  try
+    fRemotes.SaveToIni(ini);
+  finally
+    FreeAndNil(ini);
+  end;
 end;
 
 procedure TfmMain.btnMountClick(Sender: TObject);
@@ -379,7 +395,7 @@ begin
   if KillProcessTree(fActiveSelected.PID, 0) then begin
     fActiveSelected.PID:= 0;
   end;
-  fRemotes.Save;
+  RemotesChanged;
   fActiveSelected.UpdateStatus;
 end;
 
@@ -420,7 +436,7 @@ begin
   fActiveSelected.Drive:= cbActDrive.Text;
   fActiveSelected.Options:= edActOptions.Text;
   fActiveSelected.AutoMount:= cbActAutomount.Checked;
-  fRemotes.Save;
+  RemotesChanged;
   UpdateActionButtons;
   lvDefs.Refresh;
 end;
@@ -450,7 +466,7 @@ begin
   r:= TRemote.Create;
   r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
   fRemotes.Add(r);
-  fRemotes.Save;
+  RemotesChanged;
   lvDefs.Items.Count:= fRemotes.Count;
   lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
 end;
@@ -462,7 +478,7 @@ begin
   todel:= fActiveSelected;
   lvDefs.ItemIndex:= -1;
   fRemotes.Remove(todel);
-  fRemotes.Save;
+  RemotesChanged;
   lvDefs.Items.Count:= fRemotes.Count;
 end;
 
@@ -474,7 +490,7 @@ begin
   r.CopyFrom(fActiveSelected);
   r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
   fRemotes.Add(r);
-  fRemotes.Save;
+  RemotesChanged;
   lvDefs.Items.Count:= fRemotes.Count;
   lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
 end;
@@ -491,7 +507,7 @@ end;
 procedure TfmMain.btnGlobalSaveClick(Sender: TObject);
 begin
   fExe:= cbSSHFSExe.Text;
-  with TIniFile.Create(fRemotes.IniFile) do try
+  with OpenIniFile do try
     WriteString('Config', 'Exe', fExe);
   finally
     Free;
@@ -511,7 +527,7 @@ end;
 
 function GetSSHFSVersion(candidate: string): string;
 var
-  fn, outp: string;
+  outp: string;
 begin
   Result:= '';
   if FileExists(candidate) and SameFileName(ExtractFileName(candidate), 'sshfs.exe') and
@@ -557,7 +573,7 @@ end;
 
 procedure TfmMain.cbSSHFSExeChange(Sender: TObject);
 var
-  fn, outp: string;
+  outp: string;
 begin
   lbSSHFSInfo.Caption:= '<invalid>';
   outp:= GetSSHFSVersion(cbSSHFSExe.Text);
