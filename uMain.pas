@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls, StdCtrls, Spin, EditBtn,
-  uRemotes, process, LMessages, Menus, LCLType;
+  uRemotes, process, LMessages, Menus, LCLType, ActnList;
 
 const
   WMU_MOUNT_NEXT = WM_USER + 1;
@@ -21,12 +21,12 @@ type
     tsExtra: TTabSheet;
     ImageList1: TImageList;
     Panel1: TPanel;
-    btnMount: TButton;
-    btnUnmount: TButton;
+    Button1: TButton;
+    Button2: TButton;
     tmrStatusUpdate: TTimer;
-    btnExplore: TButton;
+    Button3: TButton;
     TrayIcon1: TTrayIcon;
-    btnSaveChanges: TButton;
+    Button4: TButton;
     Label1: TLabel;
     edActName: TEdit;
     Label2: TLabel;
@@ -53,10 +53,10 @@ type
     Panel2: TPanel;
     lvDefs: TListView;
     Panel3: TPanel;
-    btnRemoteAdd: TButton;
-    btnRemoteDel: TButton;
+    Button5: TButton;
+    Button6: TButton;
     cbActAutomount: TCheckBox;
-    btnCopy: TButton;
+    Button7: TButton;
     GroupBox1: TGroupBox;
     cbSSHFSExe: TComboBox;
     Label12: TLabel;
@@ -67,35 +67,53 @@ type
     miShow: TMenuItem;
     miStartMount: TMenuItem;
     miExit: TMenuItem;
+    acMain: TActionList;
+    acRemoteMount: TAction;
+    acRemoteUnmount: TAction;
+    acExploreTarget: TAction;
+    acRemoteSaveChanges: TAction;
+    acRemoteAdd: TAction;
+    acRemoteRemove: TAction;
+    acRemoteCopy: TAction;
+    acTrayShow: TAction;
+    acTrayBeginMount: TAction;
+    acExit: TAction;
+    pmList: TPopupMenu;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    N1: TMenuItem;
+    MenuItem3: TMenuItem;
+    MenuItem4: TMenuItem;
+    MenuItem5: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvDefsData(Sender: TObject; Item: TListItem);
     procedure lvDefsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-    procedure btnMountClick(Sender: TObject);
-    procedure btnUnmountClick(Sender: TObject);
     procedure tmrStatusUpdateTimer(Sender: TObject);
-    procedure btnExploreClick(Sender: TObject);
-    procedure btnSaveChangesClick(Sender: TObject);
     procedure cbActDriveDropDown(Sender: TObject);
-    procedure btnRemoteAddClick(Sender: TObject);
-    procedure btnRemoteDelClick(Sender: TObject);
     procedure cbActAuthSelect(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
-    procedure btnCopyClick(Sender: TObject);
     procedure cbSSHFSExeChange(Sender: TObject);
     procedure btnGlobalSaveClick(Sender: TObject);
     procedure btnGlobalUndoClick(Sender: TObject);
     procedure cbSSHFSExeEnter(Sender: TObject);
     procedure cbSSHFSExeDropDown(Sender: TObject);
-    procedure miShowClick(Sender: TObject);
-    procedure miStartMountClick(Sender: TObject);
-    procedure miExitClick(Sender: TObject);
     procedure lvDefsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure acMainUpdate(AAction: TBasicAction; var Handled: Boolean);
+    procedure acRemoteAddExecute(Sender: TObject);
+    procedure acRemoteRemoveExecute(Sender: TObject);
+    procedure acRemoteCopyExecute(Sender: TObject);
+    procedure acRemoteSaveChangesExecute(Sender: TObject);
+    procedure acRemoteMountExecute(Sender: TObject);
+    procedure acRemoteUnmountExecute(Sender: TObject);
+    procedure acExploreTargetExecute(Sender: TObject);
+    procedure acExitExecute(Sender: TObject);
+    procedure acTrayShowExecute(Sender: TObject);
+    procedure acTrayBeginMountExecute(Sender: TObject);
   private
     fRemotes: TRemoteList;
     fExe: string;
     fActiveSelected: TRemote;
-    procedure UpdateActionButtons;
     procedure UpdateEditSelection(NewSel: TRemote);
     procedure RemoteMount(aRemote: TRemote);
     procedure RemotesChanged;
@@ -193,32 +211,6 @@ begin
     UpdateEditSelection(fRemotes[lvDefs.ItemIndex])
   else
     UpdateEditSelection(nil);
-  UpdateActionButtons;
-end;
-
-procedure TfmMain.UpdateActionButtons;
-var
-  pn: String;
-begin
-  tsConnection.Enabled:= Assigned(fActiveSelected);
-  if Assigned(fActiveSelected) then begin
-    btnMount.Enabled:= fActiveSelected.Status in [rsNone];
-    btnUnmount.Enabled:= fActiveSelected.Status in [rsConnected];
-    btnExplore.Enabled:= fActiveSelected.Status in [rsDriveTaken, rsConnected];
-  end;
-  btnRemoteDel.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsNone, rsDriveTaken]);
-  btnCopy.Enabled:= Assigned(fActiveSelected);
-
-
-  if Assigned(fActiveSelected) then begin
-    meInfoStart.Lines.Text:= fActiveSelected.InfoStart;
-    lbInfoPID.Caption:= IntToStr(fActiveSelected.PID);
-    if GetProcessInfo(fActiveSelected.PID, pn) = STILL_ACTIVE then
-      lbInfoPID.Caption:= lbInfoPID.Caption + ' <...' + Copy(pn, Length(pn) - 42) + '>';
-  end else begin
-    meInfoStart.Clear;
-    lbInfoPID.Caption:= '';
-  end;
 end;
 
 procedure TfmMain.UpdateEditSelection(NewSel: TRemote);
@@ -381,25 +373,6 @@ begin
   end;
 end;
 
-procedure TfmMain.btnMountClick(Sender: TObject);
-begin
-  if fActiveSelected.Status <> rsNone then
-    Exit;
-
-  RemoteMount(fActiveSelected);
-end;
-
-procedure TfmMain.btnUnmountClick(Sender: TObject);
-begin
-  if fActiveSelected.Status <> rsConnected then
-    Exit;
-  if KillProcessTree(fActiveSelected.PID, 0) then begin
-    fActiveSelected.PID:= 0;
-  end;
-  RemotesChanged;
-  fActiveSelected.UpdateStatus;
-end;
-
 procedure TfmMain.tmrStatusUpdateTimer(Sender: TObject);
 const
   LPAD = '     ';
@@ -415,30 +388,6 @@ begin
   if mounted = '' then
     mounted:= LPAD + 'none';
   TrayIcon1.Hint:= Caption + sLineBreak + 'Mounted Drives: ' + sLineBreak + mounted;
-  lvDefs.Refresh;
-  UpdateActionButtons;
-end;
-
-procedure TfmMain.btnExploreClick(Sender: TObject);
-begin
-  OpenDocument(fActiveSelected.Drive);
-end;
-
-procedure TfmMain.btnSaveChangesClick(Sender: TObject);
-begin
-  fActiveSelected.Name:= edActName.Text;
-  fActiveSelected.Host:= edActHost.Text;
-  fActiveSelected.Port:= seActPort.Value;
-  fActiveSelected.User:= edActUsername.Text;
-  fActiveSelected.Auth:= TRemoteAuthMethod(cbActAuth.ItemIndex);
-  fActiveSelected.AuthSecKey:= feActSecKey.FileName;
-  fActiveSelected.AuthPassword:= edActAuthPassword.Text;
-  fActiveSelected.Path:= cbActPath.Text;
-  fActiveSelected.Drive:= cbActDrive.Text;
-  fActiveSelected.Options:= edActOptions.Text;
-  fActiveSelected.AutoMount:= cbActAutomount.Checked;
-  RemotesChanged;
-  UpdateActionButtons;
   lvDefs.Refresh;
 end;
 
@@ -458,42 +407,6 @@ begin
   for d in GetFreeDriveLetters do
     cbActDrive.Items.Add(d + ':');
   cbActDrive.Text:= sel;
-end;
-
-procedure TfmMain.btnRemoteAddClick(Sender: TObject);
-var
-  r: TRemote;
-begin
-  r:= TRemote.Create;
-  r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
-  fRemotes.Add(r);
-  RemotesChanged;
-  lvDefs.Items.Count:= fRemotes.Count;
-  lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
-end;
-
-procedure TfmMain.btnRemoteDelClick(Sender: TObject);
-var
-  todel: TRemote;
-begin
-  todel:= fActiveSelected;
-  lvDefs.ItemIndex:= -1;
-  fRemotes.Remove(todel);
-  RemotesChanged;
-  lvDefs.Items.Count:= fRemotes.Count;
-end;
-
-procedure TfmMain.btnCopyClick(Sender: TObject);
-var
-  r: TRemote;
-begin
-  r:= TRemote.Create;
-  r.CopyFrom(fActiveSelected);
-  r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
-  fRemotes.Add(r);
-  RemotesChanged;
-  lvDefs.Items.Count:= fRemotes.Count;
-  lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
 end;
 
 procedure TfmMain.FormWindowStateChange(Sender: TObject);
@@ -556,22 +469,6 @@ begin
   end;
 end;
 
-procedure TfmMain.miShowClick(Sender: TObject);
-begin
-  ShowInTaskBar:= stDefault;
-  Show;
-end;
-
-procedure TfmMain.miStartMountClick(Sender: TObject);
-begin
-  PostMessage(Handle, WMU_MOUNT_NEXT, 0, 0);
-end;
-
-procedure TfmMain.miExitClick(Sender: TObject);
-begin
-  Close;
-end;
-
 procedure TfmMain.lvDefsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
   itm: TListItem;
@@ -602,6 +499,122 @@ begin
   outp:= GetSSHFSVersion(cbSSHFSExe.Text);
   if outp>'' then
     lbSSHFSInfo.Caption:= outp;
+end;
+
+procedure TfmMain.acMainUpdate(AAction: TBasicAction; var Handled: Boolean);
+var
+  pn: String;
+begin
+  tsConnection.Enabled:= Assigned(fActiveSelected);
+  acRemoteMount.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsNone]);
+  acRemoteUnmount.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsConnected]);
+  acExploreTarget.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsDriveTaken, rsConnected]);
+  acRemoteRemove.Enabled:= Assigned(fActiveSelected) and (fActiveSelected.Status in [rsNone, rsDriveTaken]);
+  acRemoteCopy.Enabled:= Assigned(fActiveSelected);
+
+
+  if Assigned(fActiveSelected) then begin
+    meInfoStart.Lines.Text:= fActiveSelected.InfoStart;
+    lbInfoPID.Caption:= IntToStr(fActiveSelected.PID);
+    if GetProcessInfo(fActiveSelected.PID, pn) = STILL_ACTIVE then
+      lbInfoPID.Caption:= lbInfoPID.Caption + ' <...' + Copy(pn, Length(pn) - 42) + '>';
+  end else begin
+    meInfoStart.Clear;
+    lbInfoPID.Caption:= '';
+  end;
+end;
+
+procedure TfmMain.acRemoteAddExecute(Sender: TObject);
+var
+  r: TRemote;
+begin
+  r:= TRemote.Create;
+  r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
+  fRemotes.Add(r);
+  RemotesChanged;
+  lvDefs.Items.Count:= fRemotes.Count;
+  lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
+end;
+
+procedure TfmMain.acRemoteRemoveExecute(Sender: TObject);
+var
+  todel: TRemote;
+begin
+  todel:= fActiveSelected;
+  lvDefs.ItemIndex:= -1;
+  fRemotes.Remove(todel);
+  RemotesChanged;
+  lvDefs.Items.Count:= fRemotes.Count;
+end;
+
+procedure TfmMain.acRemoteCopyExecute(Sender: TObject);
+var
+  r: TRemote;
+begin
+  r:= TRemote.Create;
+  r.CopyFrom(fActiveSelected);
+  r.Name:= Format('Connection %d', [fRemotes.Count + 1]);
+  fRemotes.Add(r);
+  RemotesChanged;
+  lvDefs.Items.Count:= fRemotes.Count;
+  lvDefs.ItemIndex:= lvDefs.Items.Count - 1;
+end;
+
+procedure TfmMain.acRemoteSaveChangesExecute(Sender: TObject);
+begin
+  fActiveSelected.Name:= edActName.Text;
+  fActiveSelected.Host:= edActHost.Text;
+  fActiveSelected.Port:= seActPort.Value;
+  fActiveSelected.User:= edActUsername.Text;
+  fActiveSelected.Auth:= TRemoteAuthMethod(cbActAuth.ItemIndex);
+  fActiveSelected.AuthSecKey:= feActSecKey.FileName;
+  fActiveSelected.AuthPassword:= edActAuthPassword.Text;
+  fActiveSelected.Path:= cbActPath.Text;
+  fActiveSelected.Drive:= cbActDrive.Text;
+  fActiveSelected.Options:= edActOptions.Text;
+  fActiveSelected.AutoMount:= cbActAutomount.Checked;
+  RemotesChanged;
+  lvDefs.Refresh;
+end;
+
+procedure TfmMain.acRemoteMountExecute(Sender: TObject);
+begin
+  if fActiveSelected.Status <> rsNone then
+    Exit;
+
+  RemoteMount(fActiveSelected);
+end;
+
+procedure TfmMain.acRemoteUnmountExecute(Sender: TObject);
+begin
+  if fActiveSelected.Status <> rsConnected then
+    Exit;
+  if KillProcessTree(fActiveSelected.PID, 0) then begin
+    fActiveSelected.PID:= 0;
+  end;
+  RemotesChanged;
+  fActiveSelected.UpdateStatus;
+end;
+
+procedure TfmMain.acExploreTargetExecute(Sender: TObject);
+begin
+  OpenDocument(fActiveSelected.Drive);
+end;
+
+procedure TfmMain.acExitExecute(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TfmMain.acTrayShowExecute(Sender: TObject);
+begin
+  ShowInTaskBar:= stDefault;
+  Show;
+end;
+
+procedure TfmMain.acTrayBeginMountExecute(Sender: TObject);
+begin
+  PostMessage(Handle, WMU_MOUNT_NEXT, 0, 0);
 end;
 
 

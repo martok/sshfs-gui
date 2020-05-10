@@ -37,41 +37,37 @@ object fmMain: TfmMain
         ClientHeight = 47
         ClientWidth = 527
         TabOrder = 0
-        object btnMount: TButton
+        object Button1: TButton
           Left = 8
           Height = 31
           Top = 8
           Width = 94
-          Caption = 'Mount'
-          OnClick = btnMountClick
+          Action = acRemoteMount
           TabOrder = 0
         end
-        object btnUnmount: TButton
+        object Button2: TButton
           Left = 120
           Height = 31
           Top = 8
           Width = 94
-          Caption = 'Unmount'
-          OnClick = btnUnmountClick
+          Action = acRemoteUnmount
           TabOrder = 1
         end
-        object btnExplore: TButton
+        object Button3: TButton
           Left = 272
           Height = 31
           Top = 8
           Width = 94
-          Caption = 'Explore'
-          OnClick = btnExploreClick
+          Action = acExploreTarget
           TabOrder = 2
         end
-        object btnSaveChanges: TButton
+        object Button4: TButton
           Left = 424
           Height = 31
           Top = 8
           Width = 94
+          Action = acRemoteSaveChanges
           Anchors = [akTop, akRight]
-          Caption = 'Save'
-          OnClick = btnSaveChangesClick
           TabOrder = 3
         end
       end
@@ -398,6 +394,7 @@ object fmMain: TfmMain
         end>
       HideSelection = False
       OwnerData = True
+      PopupMenu = pmList
       ReadOnly = True
       RowSelect = True
       SmallImages = ImageList1
@@ -417,31 +414,28 @@ object fmMain: TfmMain
       ClientHeight = 47
       ClientWidth = 416
       TabOrder = 1
-      object btnRemoteAdd: TButton
+      object Button5: TButton
         Left = 8
         Height = 31
         Top = 8
         Width = 94
-        Caption = 'Add'
-        OnClick = btnRemoteAddClick
+        Action = acRemoteAdd
         TabOrder = 0
       end
-      object btnRemoteDel: TButton
+      object Button6: TButton
         Left = 120
         Height = 31
         Top = 8
         Width = 94
-        Caption = 'Remove'
-        OnClick = btnRemoteDelClick
+        Action = acRemoteRemove
         TabOrder = 1
       end
-      object btnCopy: TButton
+      object Button7: TButton
         Left = 232
         Height = 31
         Top = 8
         Width = 94
-        Caption = 'Copy'
-        OnClick = btnCopyClick
+        Action = acRemoteCopy
         TabOrder = 2
       end
     end
@@ -485,7 +479,6 @@ object fmMain: TfmMain
   object TrayIcon1: TTrayIcon
     PopUpMenu = pmTray
     Visible = True
-    OnClick = miShowClick
     Left = 120
     Top = 352
   end
@@ -493,16 +486,80 @@ object fmMain: TfmMain
     Left = 208
     Top = 352
     object miShow: TMenuItem
-      Caption = 'Show'
-      OnClick = miShowClick
+      Action = acTrayShow
     end
     object miStartMount: TMenuItem
-      Caption = 'Begin Automount'
-      OnClick = miStartMountClick
+      Action = acTrayBeginMount
     end
     object miExit: TMenuItem
+      Action = acExit
+    end
+  end
+  object acMain: TActionList
+    OnUpdate = acMainUpdate
+    Left = 208
+    Top = 280
+    object acRemoteMount: TAction
+      Caption = 'Mount'
+      OnExecute = acRemoteMountExecute
+    end
+    object acRemoteUnmount: TAction
+      Caption = 'Unmount'
+      OnExecute = acRemoteUnmountExecute
+    end
+    object acExploreTarget: TAction
+      Caption = 'Explore...'
+      OnExecute = acExploreTargetExecute
+    end
+    object acRemoteSaveChanges: TAction
+      Caption = 'Save'
+      OnExecute = acRemoteSaveChangesExecute
+    end
+    object acRemoteAdd: TAction
+      Caption = 'Add'
+      OnExecute = acRemoteAddExecute
+    end
+    object acRemoteRemove: TAction
+      Caption = 'Remove'
+      OnExecute = acRemoteRemoveExecute
+    end
+    object acRemoteCopy: TAction
+      Caption = 'Copy'
+      OnExecute = acRemoteCopyExecute
+    end
+    object acExit: TAction
       Caption = 'Exit'
-      OnClick = miExitClick
+      OnExecute = acExitExecute
+    end
+    object acTrayShow: TAction
+      Caption = 'Show'
+      OnExecute = acTrayShowExecute
+    end
+    object acTrayBeginMount: TAction
+      Caption = 'Begin Automount'
+      OnExecute = acTrayBeginMountExecute
+    end
+  end
+  object pmList: TPopupMenu
+    Left = 304
+    Top = 352
+    object MenuItem1: TMenuItem
+      Action = acRemoteMount
+    end
+    object MenuItem2: TMenuItem
+      Action = acRemoteUnmount
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem3: TMenuItem
+      Action = acRemoteAdd
+    end
+    object MenuItem4: TMenuItem
+      Action = acRemoteRemove
+    end
+    object MenuItem5: TMenuItem
+      Action = acRemoteCopy
     end
   end
 end
