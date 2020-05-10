@@ -69,6 +69,14 @@ type
   end;
 
 const
+  StatusNames: Array[TRemoteStatus] of String = (
+    'Not mounted',
+    'Drive already used',
+    'Error: Drive missing',
+    'Connected'
+  );
+
+const
   STILL_ACTIVE = JwaWindows.STILL_ACTIVE;
 
 function GetProcessInfo(PID: SizeUInt; out ProcName: String): Integer;

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls, StdCtrls, Spin, EditBtn,
-  uRemotes, process, LMessages, Menus;
+  uRemotes, process, LMessages, Menus, LCLType;
 
 const
   WMU_MOUNT_NEXT = WM_USER + 1;
@@ -90,6 +90,7 @@ type
     procedure miShowClick(Sender: TObject);
     procedure miStartMountClick(Sender: TObject);
     procedure miExitClick(Sender: TObject);
+    procedure lvDefsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
   private
     fRemotes: TRemoteList;
     fExe: string;
@@ -569,6 +570,28 @@ end;
 procedure TfmMain.miExitClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TfmMain.lvDefsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+  itm: TListItem;
+  OriginalHint, h: String;
+  r: TRemote;
+begin
+  itm:= lvDefs.GetItemAt(X, Y);
+  OriginalHint:= lvDefs.Hint;
+  if not Assigned(itm) then
+    lvDefs.Hint:= 'nix'
+  else begin
+    h:= itm.Caption;
+    r:= fRemotes[itm.Index];
+    h += sLineBreak + 'Status: ' + StatusNames[r.Status];
+    if r.PID > 0 then
+      h += sLineBreak + 'Process: ' + IntToStr(r.PID);
+    lvDefs.Hint:= h;
+  end;
+  if lvDefs.Hint <> OriginalHint then
+    Application.CancelHint;
 end;
 
 procedure TfmMain.cbSSHFSExeChange(Sender: TObject);
