@@ -18,7 +18,7 @@ type
   TfmMain = class(TForm)
     PageControl1: TPageControl;
     tsConnection: TTabSheet;
-    tsExtra: TTabSheet;
+    tsStatus: TTabSheet;
     ImageList1: TImageList;
     Panel1: TPanel;
     Button1: TButton;
@@ -57,12 +57,6 @@ type
     Button6: TButton;
     cbActAutomount: TCheckBox;
     Button7: TButton;
-    GroupBox1: TGroupBox;
-    cbSSHFSExe: TComboBox;
-    Label12: TLabel;
-    btnGlobalSave: TButton;
-    btnGlobalUndo: TButton;
-    lbSSHFSInfo: TLabel;
     pmTray: TPopupMenu;
     miShow: TMenuItem;
     miStartMount: TMenuItem;
@@ -85,6 +79,13 @@ type
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
+    tsGlobalSettings: TTabSheet;
+    Label12: TLabel;
+    cbSSHFSExe: TComboBox;
+    lbSSHFSInfo: TLabel;
+    Panel4: TPanel;
+    btnGlobalSave: TButton;
+    btnGlobalUndo: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvDefsData(Sender: TObject; Item: TListItem);
@@ -265,7 +266,7 @@ var
 begin
   if not FileExists(fExe) then begin
     MessageDlg('SSHFS binary not present, please check settings!', mtError, [mbOK], 0);
-    PageControl1.ActivePage:= tsExtra;
+    PageControl1.ActivePage:= tsStatus;
     exit;
   end;
 

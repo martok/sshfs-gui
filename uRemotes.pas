@@ -97,6 +97,7 @@ var
   ec: DWORD;
   buf: array[0..4096] of char;
 begin
+  ec:= 0;
   ProcName:= '';
   hproc:= OpenProcess(PROCESS_QUERY_INFORMATION, false, PID);
   if hproc = INVALID_HANDLE_VALUE then
@@ -213,6 +214,7 @@ var
   L: DWORD;
 begin
   Result:= nil;
+  buf:= nil;
   L:= Length(Encoded);
   SetLength(buf, L);
   if CryptStringToBinaryA(@Encoded[1], Length(Encoded), CRYPT_STRING_BASE64, @buf[0], L, nil) then begin

@@ -19,9 +19,9 @@ object fmMain: TfmMain
     Height = 631
     Top = 0
     Width = 535
-    ActivePage = tsConnection
+    ActivePage = tsGlobalSettings
     Align = alClient
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 0
     object tsConnection: TTabSheet
       Caption = 'Connection'
@@ -83,7 +83,7 @@ object fmMain: TfmMain
         Left = 8
         Height = 28
         Top = 88
-        Width = 512
+        Width = 328
         Anchors = [akTop, akLeft, akRight]
         TabOrder = 1
         Text = 'edActName'
@@ -101,7 +101,7 @@ object fmMain: TfmMain
         Height = 28
         Top = 152
         Width = 416
-        TabOrder = 2
+        TabOrder = 3
         Text = 'edActHost'
       end
       object Label3: TLabel
@@ -125,7 +125,7 @@ object fmMain: TfmMain
         Height = 28
         Top = 216
         Width = 328
-        TabOrder = 4
+        TabOrder = 5
         Text = 'edActUsername'
       end
       object Label5: TLabel
@@ -151,7 +151,7 @@ object fmMain: TfmMain
         Width = 248
         EchoMode = emPassword
         PasswordChar = '*'
-        TabOrder = 7
+        TabOrder = 8
         Text = 'edActAuthPassword'
       end
       object Label7: TLabel
@@ -192,7 +192,7 @@ object fmMain: TfmMain
         )
         OnSelect = cbActAuthSelect
         Style = csDropDownList
-        TabOrder = 5
+        TabOrder = 6
       end
       object seActPort: TSpinEdit
         Left = 432
@@ -202,7 +202,7 @@ object fmMain: TfmMain
         Anchors = [akTop, akLeft, akRight]
         MaxValue = 65535
         MinValue = 1
-        TabOrder = 3
+        TabOrder = 4
         Value = 1
       end
       object feActSecKey: TFileNameEdit
@@ -216,7 +216,7 @@ object fmMain: TfmMain
         NumGlyphs = 1
         Anchors = [akTop, akLeft, akRight]
         MaxLength = 0
-        TabOrder = 6
+        TabOrder = 7
       end
       object Label9: TLabel
         Left = 8
@@ -230,19 +230,19 @@ object fmMain: TfmMain
         Left = 8
         Height = 28
         Top = 344
-        Width = 328
+        Width = 512
         ItemHeight = 20
         Items.Strings = (
           '.'
           '/'
         )
-        TabOrder = 8
+        TabOrder = 9
         Text = 'cbActPath'
       end
       object Label11: TLabel
         Left = 344
         Height = 20
-        Top = 320
+        Top = 64
         Width = 80
         Caption = 'Drive Letter:'
         ParentColor = False
@@ -250,7 +250,7 @@ object fmMain: TfmMain
       object cbActDrive: TComboBox
         Left = 344
         Height = 28
-        Top = 344
+        Top = 88
         Width = 176
         Anchors = [akTop, akLeft, akRight]
         ItemHeight = 20
@@ -259,7 +259,7 @@ object fmMain: TfmMain
           '/'
         )
         OnDropDown = cbActDriveDropDown
-        TabOrder = 9
+        TabOrder = 2
         Text = 'cbActDrive'
       end
       object cbActAutomount: TCheckBox
@@ -271,7 +271,7 @@ object fmMain: TfmMain
         TabOrder = 11
       end
     end
-    object tsExtra: TTabSheet
+    object tsStatus: TTabSheet
       Caption = 'Extra'
       ClientHeight = 598
       ClientWidth = 527
@@ -305,63 +305,68 @@ object fmMain: TfmMain
         Caption = 'lbInfoPID'
         ParentColor = False
       end
-      object GroupBox1: TGroupBox
-        Left = 0
-        Height = 294
-        Top = 304
-        Width = 527
-        Align = alBottom
-        Caption = 'Global Settings'
-        ClientHeight = 269
-        ClientWidth = 523
+    end
+    object tsGlobalSettings: TTabSheet
+      Caption = 'Settings'
+      ClientHeight = 598
+      ClientWidth = 527
+      object Label12: TLabel
+        Left = 8
+        Height = 20
+        Top = 64
+        Width = 60
+        Caption = 'sshfs.exe:'
+        ParentColor = False
+      end
+      object cbSSHFSExe: TComboBox
+        Left = 8
+        Height = 28
+        Top = 88
+        Width = 505
+        ItemHeight = 20
+        OnChange = cbSSHFSExeChange
+        OnDropDown = cbSSHFSExeDropDown
+        OnEnter = cbSSHFSExeEnter
         TabOrder = 1
-        object cbSSHFSExe: TComboBox
-          Left = 8
-          Height = 28
-          Top = 24
-          Width = 505
-          ItemHeight = 20
-          OnChange = cbSSHFSExeChange
-          OnDropDown = cbSSHFSExeDropDown
-          OnEnter = cbSSHFSExeEnter
-          TabOrder = 0
-          Text = 'cbSSHFSExe'
-        end
-        object Label12: TLabel
-          Left = 8
-          Height = 20
-          Top = 0
-          Width = 60
-          Caption = 'sshfs.exe:'
-          ParentColor = False
-        end
+        Text = 'cbSSHFSExe'
+      end
+      object lbSSHFSInfo: TLabel
+        Left = 432
+        Height = 20
+        Top = 64
+        Width = 81
+        Alignment = taRightJustify
+        Anchors = [akTop, akRight]
+        Caption = 'lbSSHFSInfo'
+        ParentColor = False
+      end
+      object Panel4: TPanel
+        Left = 0
+        Height = 47
+        Top = 0
+        Width = 527
+        Align = alTop
+        BevelOuter = bvLowered
+        ClientHeight = 47
+        ClientWidth = 527
+        TabOrder = 0
         object btnGlobalSave: TButton
-          Left = 8
+          Left = 424
           Height = 31
-          Top = 232
+          Top = 8
           Width = 94
           Caption = 'Save'
           OnClick = btnGlobalSaveClick
           TabOrder = 1
         end
         object btnGlobalUndo: TButton
-          Left = 104
+          Left = 272
           Height = 31
-          Top = 232
+          Top = 8
           Width = 94
           Caption = 'Undo'
           OnClick = btnGlobalUndoClick
-          TabOrder = 2
-        end
-        object lbSSHFSInfo: TLabel
-          Left = 432
-          Height = 20
-          Top = 0
-          Width = 81
-          Alignment = taRightJustify
-          Anchors = [akTop, akRight]
-          Caption = 'lbSSHFSInfo'
-          ParentColor = False
+          TabOrder = 0
         end
       end
     end
