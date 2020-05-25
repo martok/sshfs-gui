@@ -299,8 +299,10 @@ begin
      '-F/dev/null', '-oIdentitiesOnly=yes',
      // make message reproducible
      '-oUserKnownHostsFile=/dev/null', '-oStrictHostKeyChecking=no',
-     // remap for write permissions
-     '-ouid=-1,gid=-1', '-oidmap=user', '-oumask=000', '-ocreate_umask=000'
+     // remap for write permissions, create modes: 777/666
+     '-ouid=-1,gid=-1', '-oidmap=none', '-ocreate_file_umask=0111', '-ocreate_dir_umask=0000',
+     // some defaults that are always never not useful
+     '-odothidden', '-odisable_hardlink'
     ]);
     // port is not part of the connect string
     if aRemote.Port<>22 then
