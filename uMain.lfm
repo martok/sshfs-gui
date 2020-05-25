@@ -484,6 +484,7 @@ object fmMain: TfmMain
   object TrayIcon1: TTrayIcon
     PopUpMenu = pmTray
     Visible = True
+    OnDblClick = acTrayShowExecute
     Left = 120
     Top = 352
   end
