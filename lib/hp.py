@@ -27,7 +27,7 @@ import sys
 
 def main(patch, left, right=None):
     if right is None:
-        right = right + ".patched"
+        right = left + ".patched"
 
     with open(left, "rb") as f:
         source = f.read()
