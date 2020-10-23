@@ -287,7 +287,7 @@ begin
      'SSH_ASKPASS=print_pass.exe',
      'SSHFS_AUTH_PASSPHRASE=' + aRemote.AuthPassword
     ]);
-    // the actuall sshfs process
+    // the actual sshfs process
     proc.Parameters.AddStrings([
      tocygdrive(fExe),
      aRemote.GetConnectStr,
@@ -301,7 +301,9 @@ begin
      '-oUserKnownHostsFile=/dev/null', '-oStrictHostKeyChecking=no',
      // remap for write permissions, create modes: 777/666
      '-ouid=-1,gid=-1', '-oidmap=none', '-ocreate_file_umask=0111', '-ocreate_dir_umask=0000',
-     // some defaults that are always never not useful
+     // shorten cache intervals
+     '-odcache_clean_interval=60', '-odcache_timeout=20', '-odcache_stat_timeout=5',
+     // some defaults that are never not useful
      '-odothidden', '-odisable_hardlink'
     ]);
     // port is not part of the connect string
