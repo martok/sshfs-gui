@@ -3,7 +3,7 @@ tasks=setup,all
 
 [setup]
 tool=env
-SSHFS_WIN_UNPACK=C:\Dev\sshfs\sshfs-win-3.5.20024-x64\SourceDir\SSHFS-Win\bin
+SSHFS_WIN_UNPACK=${realpath ..\sshfs-win-3.7.21011-x64\SourceDir\SSHFS-Win\bin}
 
 [all]
 tasks=sshfs_gui,package,package_rename

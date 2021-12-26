@@ -1,6 +1,7 @@
 # SSHFS-Gui
 
 ## Introduction
+
 SSHFS-Gui for mounting and managing SSH drives using [SSHFS-Win](https://github.com/billziss-gh/sshfs-win).
 
 Written in Lazarus and Freepascal.
@@ -9,28 +10,29 @@ Written in Lazarus and Freepascal.
 
 This program does not require installation (just extract to any directory). The configuration file is stored in the program directory, so it should be writable.
 
-Nonetheless, there are two methods of setup.
+### Prerequisite
 
-### Installer based
-First, install sshfs-win according to the [installation instructions](https://github.com/billziss-gh/sshfs-win/blob/master/README.md).
+Install a recent version of [WinFsp](https://github.com/billziss-gh/winfsp/releases).
 
-Then set the path to that `sshfs.exe` in the Extra page.
+### Semi-Portable Releases
 
-### Embedded / Semi-Portable
+The release package (created with Buildfile) contains all of SSHFS-Win, no further installation is required.
+Note that the configuration file is not fully portable due to the way passwords are stored.
 
-The package created with Buildfile contains all of SSHFS-Win, you only need to install [WinFsp](https://github.com/billziss-gh/winfsp/releases)
+### System-wide Installation
 
-Note that the configuration file is not portable due to the way passwords are stored.
+An already-installed sshfs-win (see the [installation instructions](https://github.com/billziss-gh/sshfs-win/blob/master/README.md)) can be used
+by setting the path to that installation's `sshfs.exe` in the Settings page.
 
 ## Shims
-SSHFS-Gui provides a number of shims, mainly to allow using sshfs with pubkeys with passphrase.
+
+SSHFS-Gui uses a number of shims, mainly to allow using sshfs with pubkeys with passphrase.
+
 ```
     env.exe                - env(1), cygwin
     ssh_ap.exe             - ssh(1), patched to use askpass with console
-    print_pass.exe         - special askpass
+    print_pass.exe         - special askpass that forwards a password from environment var
 ```
-
-
 
 ## Commandline Options
 
