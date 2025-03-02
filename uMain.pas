@@ -263,6 +263,7 @@ var
   OutputString: String;
   tstart: LongWord;
   sshfspid: SizeUInt;
+  hidden_args, i: integer;
 begin
   if not FileExists(fExe) then begin
     MessageDlg('SSHFS binary not present, please check settings!', mtError, [mbOK], 0);
@@ -287,6 +288,8 @@ begin
      'SSH_ASKPASS=print_pass.exe',
      'SSHFS_AUTH_PASSPHRASE=' + aRemote.AuthPassword
     ]);
+    hidden_args:= proc.Parameters.Count;
+    aRemote.InfoStart:= '';
     // the actual sshfs process
     proc.Parameters.AddStrings([
      tocygdrive(fExe),
@@ -325,6 +328,13 @@ begin
     end;
     // user options last (allow override)
     proc.Parameters.AddDelimitedText(aRemote.Options);
+    // store effective command line
+    aRemote.InfoStart:= 'Command Line: ' + proc.Parameters[hidden_args+1] + sLineBreak;
+    for i:= hidden_args to proc.Parameters.Count - 1 do begin
+      if Length(aRemote.InfoStart) - LastDelimiter(sLineBreak, aRemote.InfoStart) > 64 then
+        aRemote.InfoStart += sLineBreak;
+      aRemote.InfoStart += ' ' + proc.Parameters[i];
+    end;    
     // Execute and capture PID as soon as we can
     proc.Execute;
     aRemote.PID:= proc.ProcessID;
@@ -344,18 +354,12 @@ begin
     // Disconnect pipes
     proc.CloseOutput;
     proc.CloseStderr;
-    aRemote.InfoStart:= Copy(OutputString, 1, BytesRead);
-//    Writeln('Mount: new parent PID=', aRemote.PID);
-//    WriteLn('Output:');
-//    Writeln(aRemote.InfoStart);
-
+    aRemote.InfoStart+= sLineBreak + sLineBreak + Copy(OutputString, 1, BytesRead);
     // if everything worked up to here, retarget our tracking to the subprocess
     // this also cleans up the cleartext password leak in argv of /bin/env
     if FindSubprocess(aRemote.PID, ExtractFileName(fExe), sshfspid) then begin
-//      Writeln('Mount: new child PID=', sshfspid);
       if KillProcess(aRemote.PID) then begin
          aRemote.PID:= sshfspid;
-//         Writeln('Mount: now tracking child process');
       end;
     end;
   finally
