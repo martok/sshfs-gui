@@ -217,7 +217,7 @@ begin
   buf:= nil;
   L:= Length(Encoded);
   SetLength(buf, L);
-  if CryptStringToBinaryA(@Encoded[1], Length(Encoded), CRYPT_STRING_BASE64, @buf[0], L, nil) then begin
+  if CryptStringToBinaryA(@Encoded[1], Length(Encoded), CRYPT_STRING_BASE64, @buf[0], L, nil, nil) then begin
     blobin.cbData:= L;
     blobin.pbData:= @buf[0];
     if CryptUnprotectData(@blobin, nil, nil, nil, nil, CRYPTPROTECT_UI_FORBIDDEN, @blobout) then begin
